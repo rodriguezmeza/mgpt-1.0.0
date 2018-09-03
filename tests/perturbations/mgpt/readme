@@ -1,0 +1,7 @@
+Execute:
+
+man mgpt
+mgpt -help
+mgpt -clue
+
+to get help on how to use mgpt code.
