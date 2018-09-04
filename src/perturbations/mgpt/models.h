@@ -29,6 +29,10 @@
 global int model_int_flag;
 #define LCDM                        2
 
+global real KA_LCDM;
+global real KB_LCDM;
+
+
 global void set_model(void);
 
 

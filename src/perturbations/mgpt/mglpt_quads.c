@@ -33,6 +33,7 @@
 global_QRs QsR1R2_functions(real eta, real ki);
 global_QRs QsR1R2_functions_ver2(real eta, real ki);
 global_QRs QsR1R2_functions_ver3(real eta, real ki);
+global_QRs QsR1R2_functions_ver3_LCDM(real eta, real ki);
 
 local real KQ8_function(real k, real r, real x);
 local real KQ9_function(real k, real r, real x);
@@ -127,7 +128,8 @@ local real GaussLegendreQ1_func_ver3(real y)
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
         if (model_int_flag==LCDM) {
-            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KA = KA_LCDM;
             KB = KA;
         } else {
             KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -211,7 +213,8 @@ local real GaussLegendreQ2_func_ver3(real y)
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
         if (model_int_flag==LCDM) {
-            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KA = KA_LCDM;
             KB = KA;
         } else {
             KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -257,7 +260,7 @@ local real Q2_function(real eta, real ki)
 
 local real GaussLegendreQ3_func_ver3(real y)
 {
-    global_D2v2_ptr ptmp;
+//    global_D2v2_ptr ptmp;
     int j;
     real *xGL, *wGL;
     real kmin, kmax, ki;
@@ -267,7 +270,7 @@ local real GaussLegendreQ3_func_ver3(real y)
     real kk, rr, deltar;
     real mumin, mumax;
     real xv, w, k2, psl;
-    real KA, KB;
+//    real KA, KB;
     int Nx;
     
     gd.p = rpow(10.0,y);
@@ -294,14 +297,14 @@ local real GaussLegendreQ3_func_ver3(real y)
         xv = xGL[j];
         w = wGL[j];
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
-        ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-        if (model_int_flag==LCDM) {
-            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-            KB = KA;
-        } else {
-            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        }
+//        ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//        if (model_int_flag==LCDM) {
+//            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//            KB = KA;
+//        } else {
+//            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        }
         KQ3 = rsqr(xv)*rsqr(1.0-rr*xv)/rsqr(abskmq);
         psl = psInterpolation_nr(ki*rsqrt(abskmq), kPS, pPS, nPSLT);
         Q3aB += w*KQ3*psl;
@@ -345,7 +348,8 @@ local real KQ8_function(real ki, real rr, real xv)
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
     if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KA = KA_LCDM;
         KB = KA;
     } else {
         KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -430,18 +434,19 @@ local real Q8_function(real eta, real ki)
 
 local real KQ9_function(real ki, real rr, real xv)
 {
-    real k2, KA, KB, KQ9;
-    global_D2v2_ptr ptmp;
+    real k2, KQ9;
+//    real KA, KB;
+//    global_D2v2_ptr ptmp;
     
     k2 = ki * rsqrt(abskmq);
-    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = KA;
-    } else {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    }
+//    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//    if (model_int_flag==LCDM) {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = KA;
+//    } else {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//    }
     KQ9 = rr*xv*(1-rr*xv)/abskmq;
     return KQ9;
 }
@@ -518,18 +523,19 @@ local real Q9_function(real eta, real ki)
 
 local real KQ13_function(real ki, real rr, real xv)
 {
-    real k2, KA, KB, KQ13;
-    global_D2v2_ptr ptmp;
+    real k2, KQ13;
+//    KA, KB,
+//    global_D2v2_ptr ptmp;
     
     k2 = ki * rsqrt(abskmq);
-    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = KA;
-    } else {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    }
+//    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//    if (model_int_flag==LCDM) {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = KA;
+//    } else {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//    }
     KQ13 = rsqr(rr);
     return KQ13;
 }
@@ -612,7 +618,8 @@ local real KQI_function(real ki, real rr, real xv)
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
     if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KA = KA_LCDM;
         KB = KA;
     } else {
         KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -704,7 +711,8 @@ local real KQ5_function(real ki, real rr, real xv)
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
     if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KA = KA_LCDM;
         KB = KA;
     } else {
         KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -769,18 +777,19 @@ local real Q5_function(real eta, real ki)
 
 local real KQ7_function(real ki, real rr, real xv)
 {
-    real k2, KA, KB, KQ7;
-    global_D2v2_ptr ptmp;
+    real k2, KQ7;
+//    KA, KB, KQ7;
+//    global_D2v2_ptr ptmp;
     
     k2 = ki * rsqrt(abskmq);
-    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = KA;
-    } else {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    }
+//    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//    if (model_int_flag==LCDM) {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = KA;
+//    } else {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//    }
     KQ7 = rsqr(xv)*(1-rr*xv)/abskmq;
     return KQ7;
 }
@@ -838,18 +847,19 @@ local real Q7_function(real eta, real ki)
 
 local real KQ11_function(real ki, real rr, real xv)
 {
-    real k2, KA, KB, KQ11;
-    global_D2v2_ptr ptmp;
+    real k2, KQ11;
+//    KA, KB,
+//    global_D2v2_ptr ptmp;
     
     k2 = ki * rsqrt(abskmq);
-    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = KA;
-    } else {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    }
+//    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//    if (model_int_flag==LCDM) {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = KA;
+//    } else {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//    }
     KQ11 = rsqr(xv);
     return KQ11;
 }
@@ -907,18 +917,19 @@ local real Q11_function(real eta, real ki)
 
 local real KQ12_function(real ki, real rr, real xv)
 {
-    real k2, KA, KB, KQ12;
-    global_D2v2_ptr ptmp;
+    real k2, KQ12;
+//    KA, KB,
+//    global_D2v2_ptr ptmp;
     
     k2 = ki * rsqrt(abskmq);
-    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = KA;
-    } else {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    }
+//    ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
+//    if (model_int_flag==LCDM) {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = KA;
+//    } else {
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//    }
     KQ12 = rr*xv;
     return KQ12;
 }
@@ -1083,7 +1094,8 @@ local real GaussLegendreR2_func_ver3(real y)
         k2 = gd.k * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(k2, gd.k, gd.p);
         if (model_int_flag==LCDM) {
-            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KA = KA_LCDM;
             KB = KA;
         } else {
             KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -1130,7 +1142,8 @@ local real KRI_function(real ki, real rr, real xv)
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(k2,ki,ki*rr);
     if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KA = KA_LCDM;
         KB = KA;
     } else {
         KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -1204,7 +1217,8 @@ local real KR1p2_function(real ki, real rr, real xv)
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(k2,ki,ki*rr);
     if (model_int_flag==LCDM) {
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+//        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KA = KA_LCDM;
         KB = KA;
     } else {
         KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
@@ -1795,17 +1809,76 @@ global_QRs QsR1R2_functions_ver3(real eta, real ki)
     return *QRstmp;
 }
 
+global_QRs QsR1R2_functions_ver3_LCDM(real eta, real ki)
+{
+    real Q1p, Q2p, Q3p, Q8p, Q9p, Q13p, QIp;
+    real Q5p, Q7p, Q11p, Q12p;
+    real R1p, R2p;
+    real RI, R1p2;
+    global_QRs_ptr QRstmp;
+    
+    QRstmp = (global_QRs_ptr) allocate(1 * sizeof(global_QRs));
+    
+    Q1p = Q1_function(eta, ki);
+    Q2p = Q2_function(eta, ki);
+    Q3p = Q3_function(eta, ki);
+    Q8p = Q8_function(eta, ki);
+    Q9p = Q9_function(eta, ki);
+    Q13p = Q13_function(eta, ki);
+    QIp = QI_function(eta, ki);
+    Q5p = Q5_function(eta, ki);
+    Q7p = Q7_function(eta, ki);
+    Q11p = Q11_function(eta, ki);
+    Q12p = Q12_function(eta, ki);
+    RI = RI_function(eta, ki);
+    R1p2 = R1p2_function(eta, ki);
+    
+//    R1p = R1_function_ver4(eta, ki);    // Using the symmetry of K3symm
+    R1p = RI;   // LCDM
+    R2p = R2_function(eta, ki);
+    
+    etaQRs(QRstmp) = eta;
+    kQRs(QRstmp)    = ki;
+    Q1(QRstmp)      = Q1p;
+    Q2(QRstmp)      = Q2p;
+    Q3(QRstmp)      = Q3p;
+    Q8(QRstmp)      = Q8p;
+    Q9(QRstmp)      = Q9p;
+    Q13(QRstmp)      = Q13p;
+    QI(QRstmp)      = QIp;
+    Q5(QRstmp)      = Q5p;
+    Q7(QRstmp)      = Q7p;
+    Q11(QRstmp)      = Q11p;
+    Q12(QRstmp)      = Q12p;
+    RI(QRstmp)      = RI;
+    R1p2(QRstmp)      = R1p2;
+    R1(QRstmp)      = R1p;
+    R2(QRstmp)      = R2p;
+    
+    return *QRstmp;
+}
+
 // END DE Qs, R1 and R2
 
 global global_QRs QsR1R2_functions_driver(real eta, real ki)
 {
     global_QRs qrs;
 
+    
 //    qrs = QsR1R2_functions(gd.xstop, ki);
 //    qrs = QsR1R2_functions(eta, ki);
 //    qrs = QsR1R2_functions_ver2(eta, ki);
     qrs = QsR1R2_functions_ver3(gd.xstop, ki);
 
+    return qrs;
+}
+
+global global_QRs QsR1R2_functions_driver_LCDM(real eta, real ki)
+{
+    global_QRs qrs;
+    
+    qrs = QsR1R2_functions_ver3_LCDM(gd.xstop, ki);
+    
     return qrs;
 }
 
