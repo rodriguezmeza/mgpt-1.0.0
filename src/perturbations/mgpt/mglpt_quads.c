@@ -26,6 +26,8 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
+#include "models.h"
+
 //local real funcR1int(real x);
 
 global_QRs QsR1R2_functions(real eta, real ki);
@@ -124,8 +126,13 @@ local real GaussLegendreQ1_func_ver3(real y)
         w = wGL[j];
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        if (model_int_flag==LCDM) {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = KA;
+        } else {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        }
         KQ1 = rsqr(
                    KA + KB*(-1.0+(1.0-rsqr(xv))/abskmq)
                    );
@@ -203,8 +210,13 @@ local real GaussLegendreQ2_func_ver3(real y)
         w = wGL[j];
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        if (model_int_flag==LCDM) {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = KA;
+        } else {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        }
         KQ2 = (rr*xv*(1.0-rr*xv)/abskmq)
         *(
           KA - KB*((rsqr(xv)+rsqr(rr)-2.0*rr*xv)/abskmq)
@@ -283,8 +295,13 @@ local real GaussLegendreQ3_func_ver3(real y)
         w = wGL[j];
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        if (model_int_flag==LCDM) {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = KA;
+        } else {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        }
         KQ3 = rsqr(xv)*rsqr(1.0-rr*xv)/rsqr(abskmq);
         psl = psInterpolation_nr(ki*rsqrt(abskmq), kPS, pPS, nPSLT);
         Q3aB += w*KQ3*psl;
@@ -327,8 +344,13 @@ local real KQ8_function(real ki, real rr, real xv)
 
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ8 = rsqr(rr)*(
                     KA - KB*rsqr(-rr+xv)/abskmq
                     );
@@ -413,8 +435,13 @@ local real KQ9_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ9 = rr*xv*(1-rr*xv)/abskmq;
     return KQ9;
 }
@@ -496,8 +523,13 @@ local real KQ13_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ13 = rsqr(rr);
     return KQ13;
 }
@@ -579,8 +611,13 @@ local real KQI_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQI = rsqr(rr) * (1.0 - rsqr(xv))/(1.0 + rsqr(rr - 2.0*rr*xv))
             * (
                 KA - KB*(rsqr(xv) + rsqr(rr) - 2.0*rr*xv)/(1.0 + rsqr(rr) - 2.0*rr*xv)
@@ -666,8 +703,13 @@ local real KQ5_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ5 = rr*xv*(
                     KA - KB*rsqr(-rr+xv)/abskmq
                     );
@@ -732,8 +774,13 @@ local real KQ7_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ7 = rsqr(xv)*(1-rr*xv)/abskmq;
     return KQ7;
 }
@@ -796,8 +843,13 @@ local real KQ11_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ11 = rsqr(xv);
     return KQ11;
 }
@@ -860,8 +912,13 @@ local real KQ12_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(ki, ki*rr, k2);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KQ12 = rr*xv;
     return KQ12;
 }
@@ -1025,8 +1082,13 @@ local real GaussLegendreR2_func_ver3(real y)
         w = wGL(pGL)[j];
         k2 = gd.k * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
         ptmp = DsSecondOrder_func_ver2(k2, gd.k, gd.p);
-        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        if (model_int_flag==LCDM) {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = KA;
+        } else {
+            KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+            KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        }
         KR2 = (rr*xv*(1.0-rr*xv)/abskmq)
         *(
           KA - KB*rsqr(xv)
@@ -1067,8 +1129,13 @@ local real KRI_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(k2,ki,ki*rr);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KRI = (rsqr(rr)*(1.0-rsqr(xv))/abskmq)
                 *(
                     KA - KB*rsqr(xv)
@@ -1136,8 +1203,13 @@ local real KR1p2_function(real ki, real rr, real xv)
     
     k2 = ki * rsqrt(abskmq);
     ptmp = DsSecondOrder_func_ver2(k2,ki,ki*rr);
-    KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
-    KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    if (model_int_flag==LCDM) {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = KA;
+    } else {
+        KA = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB = DB2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+    }
     KR1p2 = (rsqr(rr)*(1.0-rr*xv)/abskmq)
                 *(
                   KA - KB*rsqr(xv)
