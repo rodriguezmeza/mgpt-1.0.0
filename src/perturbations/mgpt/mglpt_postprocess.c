@@ -26,6 +26,8 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
+#define EPSQ 1.0e-6
+
 local real Q12_function(real eta, real ki);
 
 local  real Interpolation_nr(real k, double kPS[], double pPS[], int nPS, double pPS2[]);
@@ -918,8 +920,10 @@ local real sigma2L_function_ver2(void)
     ymax = rlog10(kmax);
 
     result= (1.0/SIXPI2)*rlog(10.0)
-    *qromo(sigma2L_function_int,ymin,ymax,midpnt);
+    *qromo(sigma2L_function_int,ymin,ymax,midpnt,EPSQ);
     
     return result;
 
 }
+
+#undef EPSQ

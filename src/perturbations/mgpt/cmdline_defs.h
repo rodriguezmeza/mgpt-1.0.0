@@ -63,6 +63,7 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
 //
 // Integration parameters:
     "ngausslegpoints=10",           ";Number of Gauss-Legendre of integration points", ":nglpts",
+    "epsquad=1.0e-6",               ";Quadrature tolerance error parameter",
 //
 // Post processing parameters:
     "postprocessing=false",			";Post processing options", ":pp",

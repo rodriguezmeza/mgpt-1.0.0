@@ -107,6 +107,7 @@ typedef struct {
     real eps;
 // Integration parameters:
     int ngausslegpoints;
+    real epsquad;
 //
 } cmdline_data, *cmdline_data_ptr;
 
