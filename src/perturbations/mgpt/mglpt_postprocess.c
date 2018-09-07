@@ -33,8 +33,7 @@ local real Q12_function(real eta, real ki);
 local  real Interpolation_nr(real k, double kPS[], double pPS[], int nPS, double pPS2[]);
 
 local real sigma2L_function_int(real y);
-local real sigma2L_function_ver2(void);
-local real sigma2L_function(real ki);
+local real sigma2L_function(void);
 
 local real PSLF(real k);
 local real Q1F(real k);
@@ -277,8 +276,8 @@ local void correlation_processing(void)
                 xL(k,q),xloop(k,q),
                 yL(k,q),yloop(k,q),
                 x10(k,q),y10(k,q),
-                Q12_function(0., k),sigma2L_function(k),
-                sigma2L_function_ver2()
+                Q12_function(0., k),sigma2L_function(),
+                sigma2L_function()
                 );
     }
     fclose(outstr);
@@ -481,11 +480,23 @@ global void biasterms_processing(void)
     real k, PSLT;
     real Ploop;
     real a02Off;
+    int i;
 
     fprintf(stdout,"\n\nBias terms processing...\n");
     InputQsRsTable();
     
-    sigma2L = sigma2L_function_ver2();
+    kTab = dvector(1,nQsRsTable);
+    PSLMGT = dvector(1,nQsRsTable);
+    PSLMGT2 = dvector(1,nQsRsTable);
+    i=1;
+    for (p=PQsRstab; p<PQsRstab+nQsRsTable; p++) {
+        kTab[i] = kQsRs(p);
+        PSLMGT[i] = PSMGLQsRs(p);
+        i++;
+    }
+    spline(kTab,PSLMGT,nQsRsTable,1.0e30,1.0e30,PSLMGT2);
+
+    sigma2L = sigma2L_function();
     fprintf(stdout,"\n\nsigma2L = %g\n",sigma2L);
     
 // a02 offset
@@ -518,7 +529,10 @@ global void biasterms_processing(void)
                 );
     }
     fclose(outstr);
-    //
+//
+    free_dvector(PSLMGT2,1,nQsRsTable);
+    free_dvector(PSLMGT,1,nQsRsTable);
+    free_dvector(kTab,1,nQsRsTable);
     free(PQsRstab);
 }
 
@@ -1232,61 +1246,23 @@ local real XLT_function(real qi)
 
 
 // sigma2L
-local real sigma2L_function(real ki)
-{
-    int i;
-    
-    real kmin, kmax;
-    real PSLA, PSLB;
-    real deltar, kk;
-
-    real sigma2L;
-    
-    pointPSTableptr p;
-    
-    kmin = kPos(PSLT+1);
-    kmax = kPos(PSLT+nPSLT-1);
-    fprintf(gd.outlog,"nPSLT, kmin and kmax :: %d %g %g\n",nPSLT,kmin,kmax);
-    
-    sigma2L = 0.0;
-    
-    PSLA = 0.0;
-    p = PSLCDMtab;
-//
-    for (i=1; i<nPSTable; i++) {
-        kk = kPos(p+i);
-        PSLB = psInterpolation_nr(kk, kPS, pPS, nPSLT);
-        deltar = (kPos(p+i)-kPos(p+i-1))/kk;
-        sigma2L += deltar*(PSLA + PSLB)/2.0;
-        PSLA = PSLB;
-    }
-
-    sigma2L *= (1.0/SIXPI2);
-    
-    return sigma2L;
-}
-
 local real sigma2L_function_int(real y)
 {
     real p;
     real PSL;
     
     p = rpow(10.0,y);
-
-//    PSL = psInterpolation_nr(p, kPS, pPS, nPSLT);
     PSL = Interpolation_nr(p, kTab, PSLMGT, nQsRsTable, PSLMGT2);
 
     return p*PSL;
 }
 
-local real sigma2L_function_ver2(void)
+local real sigma2L_function(void)
 {
     real result;
     real kmin, kmax;
     real ymin, ymax;
 
-//    kmin = kPos(PSLT+1);
-//    kmax = kPos(PSLT+nPSLT-1);
     kmin = PSLMGT[1];
     kmax = PSLMGT[nQsRsTable];
     ymin = rlog10(kmin);
