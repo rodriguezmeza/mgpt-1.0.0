@@ -38,6 +38,7 @@ void EndRun(void);
 // Postprocessing
 global void PostProcessing(void);
 global void biasterms_processing(void);
+global void qfunctions_processing(void);
 
 
 //real psLCDMf(real k);       // Interpolation of the power spectrum

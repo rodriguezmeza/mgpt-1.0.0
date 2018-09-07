@@ -41,6 +41,7 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
 //
 // Modified gravity model parameters:
     "mgmodel=HS",                   ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
+    "suffixModel=",               ";Suffix model to add to output filenames", ":suffix",
     "nHS=1",                        ";Hu-Sawicki index",
     "fR0=1.0e-5",                   ";Hu-Sawicki f_R0",
 //    "beta2=1/6",                    ";Hu-Sawicki beta^2",
@@ -63,7 +64,7 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
 //
 // Integration parameters:
     "ngausslegpoints=10",           ";Number of Gauss-Legendre of integration points", ":nglpts",
-    "epsquad=1.0e-6",               ";Quadrature tolerance error parameter",
+    "epsquad=1.0e-5",               ";Quadrature tolerance error parameter",
 //
 // Post processing parameters:
     "postprocessing=false",			";Post processing options", ":pp",

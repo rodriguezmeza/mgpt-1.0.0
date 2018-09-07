@@ -723,7 +723,10 @@ void gser(double *gamser, double a, double x, double *gln)
 real rj0Bessel(real x)
 {
     real func;
-    func= rsin(x)/x;
+    if (rabs(x)<0.1)
+        func = 1. - rsqr(x)/6. + rpow(x,4.0)/120.;
+    else
+        func= rsin(x)/x;
     return (func);
 }
 
@@ -731,7 +734,10 @@ real rj1Bessel(real x)
 {
 // Sin[x]/x^2 - Cos[x]/x
     real func;
-    func= rsin(x)/rsqr(x) - rcos(x)/x;
+    if (rabs(x)<0.1)
+        func = x/3.0 - rpow(x,3.0)/30.0;
+    else
+        func= rsin(x)/rsqr(x) - rcos(x)/x;
     return (func);
 }
 
@@ -739,7 +745,10 @@ real rj2Bessel(real x)
 {
 // (3/x^2 - 1) Sin[x]/x - (3 Cos[x])/x^2
     real func;
-    func= (3.0/rsqr(x) - 1.0)*rsin(x)/x - (3.0*rcos(x))/rsqr(x);
+    if (rabs(x)<0.1)
+        func =rsqr(x)/15. - rpow(x,4.0)/210.;
+    else
+        func= (3.0/rsqr(x) - 1.0)*rsin(x)/x - (3.0*rcos(x))/rsqr(x);
     return (func);
 }
 
@@ -747,7 +756,10 @@ real rj3Bessel(real x)
 {
 // (15/x^3 - 6/x) Sin[x]/x - (15/x^2 - 1) Cos[x]/x
     real func;
-    func= (15.0/rpow(x,3.0) - 6.0/x)*rsin(x)/x - (15/rsqr(x) - 1.0)*rcos(x)/x;
+    if (rabs(x)<0.1)
+        func = rpow(x,3.0)/105.;
+    else
+        func= (15.0/rpow(x,3.0) - 6.0/x)*rsin(x)/x - (15/rsqr(x) - 1.0)*rcos(x)/x;
     return (func);
 }
 

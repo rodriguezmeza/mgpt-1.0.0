@@ -92,6 +92,7 @@ local void ReadParametersCmdline(void)
 // Modified gravity model parameters:
     cmd.mgmodel = GetParam("mgmodel");
     cmd.model_paramfile = GetParam("model_paramfile");
+    cmd.suffixModel = GetParam("suffixModel");
     cmd.nHS = GetiParam("nHS");
     cmd.fR0 = GetdParam("fR0");
 //    cmd.beta2str = GetParam("beta2");
@@ -127,7 +128,7 @@ local void ReadParametersCmdline(void)
 
 #undef parameter_null
 
-#define logfile			"mgpt.log"
+//#define logfile			"mgpt.log"
 
 local void startrun_Common(void)
 {
@@ -180,10 +181,18 @@ local void startrun_ParamStat(void)
 {
 	real dx1, dx2;
 
+// Power spectrum table:
     if (GetParamStat("fnamePS") & ARGPARAM)
         cmd.fnamePS = GetParam("fnamePS");
+    if (GetParamStat("kmin") & ARGPARAM)
+        cmd.kmin = GetdParam("kmin");
+    if (GetParamStat("kmax") & ARGPARAM)
+        cmd.kmax = GetdParam("kmax");
+    if (GetParamStat("Nk") & ARGPARAM)
+        cmd.Nk = GetiParam("Nk");
 
 // Modified gravity model parameters:
+
 //    if (GetParamStat("beta2") & ARGPARAM) {
 //        cmd.beta2str = GetParam("beta2");
 //        gd.beta2 = (sscanf(cmd.beta2str, "%lf/%lf", &dx1, &dx2) == 2 ?
@@ -192,6 +201,12 @@ local void startrun_ParamStat(void)
 //            error("\n\nstartrun_ParamStat: beta2 : denominator must be finite\n");
 //    }
 //
+
+// Background cosmology:
+    if (GetParamStat("om") & ARGPARAM)
+        cmd.om = GetdParam("om");
+    if (GetParamStat("h") & ARGPARAM)
+        cmd.h = GetdParam("h");
 
 	if (GetParamStat("etaini") & ARGPARAM)
 		cmd.x = GetdParam("etaini");
@@ -214,11 +229,13 @@ local void startrun_ParamStat(void)
 				cmd.integration_method);
 	}
 
+// Integration parameters:
     if (GetParamStat("ngausslegpoints") & ARGPARAM)
         cmd.ngausslegpoints = GetiParam("ngausslegpoints");
     if (GetParamStat("epsquad") & ARGPARAM)
         cmd.epsquad = GetdParam("epsquad");
 
+// Post processing parameters:
     if (GetParamStat("postprocessing") & ARGPARAM)
         cmd.postprocessing = GetbParam("postprocessing");
     
@@ -275,7 +292,7 @@ local void setFilesDirs_log(void)
 //    fprintf(stdout,"system: %s\n",buf);
     system(buf);
 
-    sprintf(gd.logfilePath,"%s/%s",gd.tmpDir,logfile);
+    sprintf(gd.logfilePath,"%s/mgpt%s.log",gd.tmpDir,cmd.suffixModel);
 //    fprintf(stdout,"Log file Path and file name: %s\n",gd.logfilePath);
 }
 
@@ -291,11 +308,15 @@ local void setFilesDirs(void)
     sprintf(gd.inputDir,"Input");
     sprintf(gd.fnamePS,"%s/%s",gd.inputDir,cmd.fnamePS);
 
-    sprintf(gd.fpfnamekfun,"CLPT/kfunctions.dat");
-    sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum.dat");
+//    sprintf(gd.fpfnamekfun,"CLPT/kfunctions.dat");
+    sprintf(gd.fpfnamekfun,"CLPT/kfunctions%s.dat",cmd.suffixModel);
+//    sprintf(namebuf,"%s%s.dat",gd.fpfnamekfun,cmd.suffixModel);
+//    sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum.dat");
+    sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum%s.dat",cmd.suffixModel);
+    sprintf(gd.fpfnameqfunctions,"CLPT/qfunctions%s.dat",cmd.suffixModel);
 }
 
-#undef logfile
+//#undef logfile
 
 local void ReadParameterFile(char *fname)
 {
@@ -325,6 +346,7 @@ local void ReadParameterFile(char *fname)
 // Modified gravity model parameters:
     SPName(cmd.mgmodel,"mgmodel",100);
     SPName(cmd.model_paramfile,"model_paramfile",100);
+    SPName(cmd.suffixModel,"suffixModel",100);
     IPName(cmd.nHS,"nHS");
     RPName(cmd.fR0,"fR0");
 //    SPName(cmd.beta2str,"beta2",100);
@@ -425,8 +447,8 @@ local void PrintParameterFile(char *fname)
 {
     FILE *fdout;
     char buf[200];
-    
-    sprintf(buf,"%s/%s%s",gd.tmpDir,fname,"-usedvalues");
+
+    sprintf(buf,"%s/%s%s%s",gd.tmpDir,fname,cmd.suffixModel,"-usedvalues");
     if(!(fdout=fopen(buf,"w"))) {
         fprintf(stdout,"error opening file '%s' \n",buf);
         exit(0);
@@ -449,6 +471,7 @@ local void PrintParameterFile(char *fname)
 // Modified gravity model parameters:
         fprintf(fdout,FMTT,"mgmodel",cmd.mgmodel);
         fprintf(fdout,FMTT,"model_paramfile",cmd.model_paramfile);
+        fprintf(fdout,FMTT,"suffixModel",cmd.suffixModel);
         fprintf(fdout,FMTI,"nHS",cmd.nHS);
         fprintf(fdout,FMTR,"fR0",cmd.fR0);
 //        fprintf(fdout,FMTT,"beta2",cmd.beta2str);
@@ -586,7 +609,7 @@ local void PrintMGModelParameterFile(char *fname)
     FILE *fdout;
     char buf[200];
     
-    sprintf(buf,"%s%s",fname,"-usedvalues");
+    sprintf(buf,"%s%s%s",fname,cmd.suffixModel,"-usedvalues");
     if(!(fdout=fopen(buf,"w"))) {
         fprintf(stdout,"error opening file '%s' \n",buf);
         exit(0);
@@ -794,13 +817,15 @@ local void InputPSTable(void)
         p++;
     }
 
-    sprintf(namebuf,"%s/%s_%s",gd.tmpDir,cmd.fnamePS, "ext.dat");
+
+    sprintf(namebuf,"%s/%s%s_%s",gd.tmpDir,cmd.fnamePS,cmd.suffixModel,"ext.dat");
     outstr = stropen(namebuf,"w!");
     for (p=PSLCDMtab; p<PSLCDMtab+nPSTable; p++) {
         fprintf(outstr,"%g %g\n",
                 kPos(p),PS(p));
     }
     fclose(outstr);
+
     gd.kminPSext = kmn;
     gd.kmaxPSext = kmx;
     fprintf(gd.outlog,"\nkmin, kmax of the extended power spectrum (final values): %g %g\n",
@@ -843,8 +868,8 @@ local void PSLTable(void)
     for (p = PSLCDMtab; p<PSLCDMtab+nPSTable; p++) {
         PS(p) *= fac;
     }
-    
-    sprintf(namebuf,"%s/%s_%s",gd.tmpDir,cmd.fnamePS, "ext2.dat");
+
+    sprintf(namebuf,"%s/%s%s_%s",gd.tmpDir,cmd.fnamePS,cmd.suffixModel,"ext2.dat");
     outstr = stropen(namebuf,"w!");
     for (p=PSLCDMtab; p<PSLCDMtab+nPSTable; p++) {
         fprintf(outstr,"%g %g\n",
