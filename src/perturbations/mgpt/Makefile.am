@@ -1,6 +1,6 @@
 bin_PROGRAMS = mgpt
 
-mgpt_SOURCES = main.c cmdline_defs.h data_struc_defs.h globaldefs.h \
+mgpt_SOURCES = main.c cmdline_defs.h globaldefs.h \
 mglpt_diffeqs.c mglpt_io.c mglpt_postprocess.c \
 mglpt_quads.c mglpt.c models.c models.h protodefs.h startrun.c 
 
