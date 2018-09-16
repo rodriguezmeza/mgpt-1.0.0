@@ -27,7 +27,7 @@
 #ifndef _data_struc_defs_h
 #define _data_struc_defs_h
 
-
+/*
 #if !defined(global)					// global def question must be here
 #  define global extern
 #endif
@@ -53,6 +53,8 @@
   param=(string) malloc(n);											\
   addr[nt]=param;													\
   id[nt++]=STRING;}
+
+*/
 
 #endif // ! _data_struc_defs_h
 

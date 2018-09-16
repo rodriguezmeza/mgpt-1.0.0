@@ -40,17 +40,20 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
     "Nk=300",                       ";Total number of k´s analyse from the power spectrum table",":nk",
 //
 // Modified gravity model parameters:
-    "mgmodel=HS",                   ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
+    "mgModel=HS",                   ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
     "suffixModel=",               ";Suffix model to add to output filenames", ":suffix",
     "nHS=1",                        ";Hu-Sawicki index",
     "fR0=1.0e-5",                   ";Hu-Sawicki f_R0",
-//    "beta2=1/6",                    ";Hu-Sawicki beta^2",
-//    "omegaBD=0.0",                  ";Omega Brans-Dicke",
     "screening=1.0",                ";Hu-Sawicki screening", ":sc",
+// DGP:
+    "eps_DGP=-1.0",                  ";DGP parameter, use with mgModel=DGP",":epsdgp",
+    "rc_DGP=1.0",                       ";DGP parameter, use with mgModel=DGP",":rcdgp",
 //
     "model_paramfile=fofRHS.in",	";If mgmodel is not the default, give its parameter file name", ":mpf",
 //
-    "om=0.281",                     ";Omega matter value (z=0)",
+// Background cosmology:
+    "Om=0.281",                     ";Omega matter value (z=0)",":om",
+    "OL= 1 - Om",                     ";Omega Lambda value (z=0)",":ol",
     "h=0.697",                      ";Hubble parameter value (z=0)",
 //
 // Differential equations evolution parameters:
@@ -62,9 +65,11 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
     "maxnsteps=10000",              ";Maximum number of integration steps", ":maxn",
     "integration_method=bsstep",	";Integration method to use", ":im",
 //
-// Integration parameters:
+// Quadrature parameters:
+    "quadratureMethod=trapezoid",      ";Quadrature method to use", ":quadm",
+    "nquadSteps=100",               ";Number of k´s from the power spectrum table to integrate (trapezoid)",":nquad",
     "ngausslegpoints=10",           ";Number of Gauss-Legendre of integration points", ":nglpts",
-    "epsquad=1.0e-5",               ";Quadrature tolerance error parameter",
+    "epsquad=1.0e-5",               ";Quadrature tolerance error parameter (open Romberg method)",
 //
 // Post processing parameters:
     "postprocessing=false",			";Post processing options", ":pp",

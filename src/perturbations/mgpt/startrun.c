@@ -56,7 +56,7 @@ void StartRun(string head0, string head1, string head2, string head3)
     printf("\n%s\n%s: %s\n\t %s\n",
 		gd.headline0, gd.headline1, gd.headline2, gd.headline3);
 
-	gd.stopflag = 0;
+//	gd.stopflag = 0;
 
     cmd.paramfile = GetParam("paramfile");
     if (!strnull(cmd.paramfile))
@@ -90,14 +90,16 @@ local void startrun_cmdline(void)
 local void ReadParametersCmdline(void)
 {
 // Modified gravity model parameters:
-    cmd.mgmodel = GetParam("mgmodel");
+    cmd.mgmodel = GetParam("mgModel");
     cmd.model_paramfile = GetParam("model_paramfile");
     cmd.suffixModel = GetParam("suffixModel");
     cmd.nHS = GetiParam("nHS");
     cmd.fR0 = GetdParam("fR0");
-//    cmd.beta2str = GetParam("beta2");
-//    cmd.omegaBD = GetdParam("omegaBD");
     cmd.screening = GetdParam("screening");
+//
+// DGP:
+    cmd.eps_DGP = GetdParam("eps_DGP");
+    cmd.rc_DGP = GetdParam("rc_DGP");
 //
 // Power spectrum table:
     cmd.fnamePS = GetParam("fnamePS");
@@ -106,7 +108,8 @@ local void ReadParametersCmdline(void)
     cmd.Nk = GetiParam("Nk");
 //
 // Background cosmology:
-    cmd.om = GetdParam("om");
+    cmd.om = GetdParam("Om");
+    cmd.olstr = GetParam("OL");
     cmd.h = GetdParam("h");
 //
 // Differential equations evolution parameters:
@@ -118,7 +121,9 @@ local void ReadParametersCmdline(void)
     cmd.maxnsteps = GetiParam("maxnsteps");
 	cmd.integration_method = GetParam("integration_method");
 //
-// Integration parameters:
+// Quadrature parameters:
+    cmd.quadratureMethod = GetParam("quadratureMethod");
+    cmd.nquadSteps = GetiParam("nquadSteps");
     cmd.ngausslegpoints = GetiParam("ngausslegpoints");
     cmd.epsquad = GetdParam("epsquad");
 // Post processing parameters:
@@ -128,11 +133,11 @@ local void ReadParametersCmdline(void)
 
 #undef parameter_null
 
-//#define logfile			"mgpt.log"
 
 local void startrun_Common(void)
 {
 	real dx1, dx2;
+    char *ep;
 
     setFilesDirs_log();
     strcpy(gd.mode,"w");
@@ -140,11 +145,38 @@ local void startrun_Common(void)
 		error("\nstart_Common: error opening file '%s' \n",gd.logfilePath);
 
 // Modified gravity model parameters:
-//    gd.beta2 = (sscanf(cmd.beta2str, "%lf/%lf", &dx1, &dx2) == 2 ?
-//             dx1/dx2 : atof(cmd.beta2str));
-//    if ( dx2 == 0. )
-//        error("\n\nstartrun_Common: beta2 denominator : must be finite\n");
 //
+
+// Background cosmology:
+//
+    ep = strchr(cmd.olstr, '-');
+    if (ep == NULL) {
+        gd.ol = GetdParam("OL");
+        fprintf(gd.outlog,"\nOL string input without '-' :: %s\n",cmd.olstr);
+        fprintf(gd.outlog,"\nOLambda, Om and sum  : %g %g %g\n",gd.ol, cmd.om, gd.ol+cmd.om);
+    } else {
+        ep = strchr(cmd.olstr, '1');
+        if (ep == NULL)
+            error("\nstart_Common: OL not in the format '1 - Om' \n");
+        else {
+            ep = strchr(cmd.olstr, 'O');
+            if (ep == NULL)
+                error("\nstart_Common: OL not in the format '1 - Om' \n");
+            else
+                if (*(ep+1) == 'm') {
+                    fprintf(gd.outlog,"\nFound Om\n");
+                    gd.ol = 1. - cmd.om;
+                    fprintf(gd.outlog,"\nOLambda and Om : %g %g\n",gd.ol, cmd.om);
+                } else {
+                    fprintf(gd.outlog,"\nNot found Om\n");
+                    error("\nstart_Common: OL not in the format (1 - Om) \n");
+                }
+        }
+        
+    }
+//
+
+// Differential equations evolution parameters:
     gd.dx = (sscanf(cmd.dxstr, "%lf/%lf", &dx1, &dx2) == 2 ?
 				dx1/dx2 : atof(cmd.dxstr));
     if ( dx2 == 0. )
@@ -152,25 +184,31 @@ local void startrun_Common(void)
 
     CheckParameters();
     GaussLegendrePoints();
-	integration_method_string_to_int(cmd.integration_method, &gd.method_int);
+    quadraturemethod_string_to_int(cmd.quadratureMethod, &gd.quadmethod_int);
+    integration_method_string_to_int(cmd.integration_method, &gd.method_int);
     gd.xnow = cmd.x;
     gd.xout = gd.xnow;
     gd.xoutinfo = gd.xnow;
 
 // eta = Log[1/(1 + z)] -> exp[eta] = 1/(1 + z) -> (1 + z) = exp[-eta] -> z = exp[-eta] - 1
-//    gd.xstop = rexp(-cmd.xstop) - 1.0;
     gd.xstop = rlog(1.0/(1.0+cmd.xstop));
 
     set_model();
-
     setFilesDirs();
 
     if (!strnull(cmd.fnamePS)) {
         InputPSTable();
         PSLTable();
     }
+    if (cmd.nquadSteps > nPSLT)
+        error("CheckParameters: nquadSteps > nPSLT\n");
 
-    if (!strnull(cmd.model_paramfile) && !(strcmp(cmd.mgmodel,"HS") == 0) ) {
+
+    if (!strnull(cmd.model_paramfile)
+        && !(strcmp(cmd.mgmodel,"HS") == 0)
+        && !(strcmp(cmd.mgmodel,"DGP") == 0)
+        && !(strcmp(cmd.mgmodel,"LCDM") == 0)
+        ) {
         fprintf(stdout,"\n\nNot default model, using parameter file: %s\n",cmd.model_paramfile);
         ReadMGModelParameterFile(cmd.model_paramfile);
         PrintMGModelParameterFile(cmd.model_paramfile);
@@ -192,22 +230,31 @@ local void startrun_ParamStat(void)
         cmd.Nk = GetiParam("Nk");
 
 // Modified gravity model parameters:
-
-//    if (GetParamStat("beta2") & ARGPARAM) {
-//        cmd.beta2str = GetParam("beta2");
-//        gd.beta2 = (sscanf(cmd.beta2str, "%lf/%lf", &dx1, &dx2) == 2 ?
-//                 dx1/dx2 : atof(cmd.beta2str));
-//        if ( dx2 == 0. )
-//            error("\n\nstartrun_ParamStat: beta2 : denominator must be finite\n");
-//    }
-//
+    if (GetParamStat("mgModel") & ARGPARAM)
+        cmd.mgmodel = GetParam("mgModel");
+    if (GetParamStat("suffixModel") & ARGPARAM)
+        cmd.suffixModel = GetParam("suffixModel");
+    if (GetParamStat("nHS") & ARGPARAM)
+        cmd.nHS = GetiParam("nHS");
+    if (GetParamStat("fR0") & ARGPARAM)
+        cmd.fR0 = GetdParam("fR0");
+    if (GetParamStat("screening") & ARGPARAM)
+        cmd.rc_DGP = GetdParam("screening");
+// DGP:
+    if (GetParamStat("eps_DGP") & ARGPARAM)
+        cmd.eps_DGP = GetdParam("eps_DGP");
+    if (GetParamStat("rc_DGP") & ARGPARAM)
+        cmd.rc_DGP = GetdParam("rc_DGP");
 
 // Background cosmology:
-    if (GetParamStat("om") & ARGPARAM)
-        cmd.om = GetdParam("om");
+    if (GetParamStat("Om") & ARGPARAM)
+        cmd.om = GetdParam("Om");
+    if (GetParamStat("OL") & ARGPARAM)
+        cmd.olstr = GetParam("OL");
     if (GetParamStat("h") & ARGPARAM)
         cmd.h = GetdParam("h");
 
+// Differential equations evolution parameters:
 	if (GetParamStat("etaini") & ARGPARAM)
 		cmd.x = GetdParam("etaini");
 	if (GetParamStat("deta") & ARGPARAM) {
@@ -225,11 +272,18 @@ local void startrun_ParamStat(void)
 
 	if (GetParamStat("integration_method") & ARGPARAM) {
 		cmd.integration_method = GetParam("integration_method");
-		fprintf(gd.outlog,"\n\nrunning now %s integration method ...\n",
+		fprintf(gd.outlog,"\n\nrunning instead %s integration method ...\n",
 				cmd.integration_method);
 	}
 
-// Integration parameters:
+// Quadrature parameters:
+    if (GetParamStat("quadratureMethod") & ARGPARAM) {
+        cmd.quadratureMethod = GetParam("quadratureMethod");
+        fprintf(gd.outlog,"\n\nrunning instead %s quadrature method ...\n",
+                cmd.quadratureMethod);
+    }
+    if (GetParamStat("nquadSteps") & ARGPARAM)
+        cmd.nquadSteps = GetiParam("nquadSteps");
     if (GetParamStat("ngausslegpoints") & ARGPARAM)
         cmd.ngausslegpoints = GetiParam("ngausslegpoints");
     if (GetParamStat("epsquad") & ARGPARAM)
@@ -247,8 +301,7 @@ local void startrun_ParamStat(void)
 local void CheckParameters(void)
 {
 // Modified gravity model parameters:
-//    if (gd.beta2 < 0.0)
-//        error("CheckParameters: beta2 can not be less than zero :: %g\n",gd.beta2);
+
 //
 // Power spectrum table:
     if (strnull(cmd.fnamePS))
@@ -262,19 +315,25 @@ local void CheckParameters(void)
     if (cmd.Nk < 0)
         error("CheckParameters: absurd value for Nk\n");
 //
+// Background cosmology:
     if (cmd.om > 1.0 || cmd.om < 0.0)
         error("CheckParameters: absurd value for om\n");
+    if ( gd.ol < 0. )
+        error("\n\nstartrun_ParamStat: OL (=%g) : must be positive\n",gd.ol);
     if (cmd.h < 0.0)
         error("CheckParameters: absurd value for h\n");
 
+// Differential equations evolution parameters:
     if (gd.dx == 0)
         error("CheckParameters: absurd value for deta\n");
     if(cmd.x == rlog(1.0/(1.0+cmd.xstop)) )
         error("\n\nstartrun_Common: etaini and etastop=exp(-zout)-1 must be different\n");
-
     if (cmd.maxnsteps < 1)
         error("CheckParameters: absurd value for maxnsteps\n");
 
+// Quadrature parameters:
+    if (cmd.nquadSteps <= 1)
+        error("CheckParameters: absurd value for nquadSteps\n");
     if (cmd.ngausslegpoints <= 1)
         error("CheckParameters: absurd value for ngausslegpoints\n");
     if (cmd.epsquad >= 1.0e-1 || cmd.epsquad <= 0)
@@ -289,11 +348,9 @@ local void setFilesDirs_log(void)
     sprintf(gd.tmpDir,"tmp");
 
     sprintf(buf,"if [ ! -d %s ]; then mkdir %s; fi",gd.tmpDir,gd.tmpDir);
-//    fprintf(stdout,"system: %s\n",buf);
     system(buf);
 
     sprintf(gd.logfilePath,"%s/mgpt%s.log",gd.tmpDir,cmd.suffixModel);
-//    fprintf(stdout,"Log file Path and file name: %s\n",gd.logfilePath);
 }
 
 local void setFilesDirs(void)
@@ -308,15 +365,11 @@ local void setFilesDirs(void)
     sprintf(gd.inputDir,"Input");
     sprintf(gd.fnamePS,"%s/%s",gd.inputDir,cmd.fnamePS);
 
-//    sprintf(gd.fpfnamekfun,"CLPT/kfunctions.dat");
     sprintf(gd.fpfnamekfun,"CLPT/kfunctions%s.dat",cmd.suffixModel);
-//    sprintf(namebuf,"%s%s.dat",gd.fpfnamekfun,cmd.suffixModel);
-//    sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum.dat");
     sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum%s.dat",cmd.suffixModel);
     sprintf(gd.fpfnameqfunctions,"CLPT/qfunctions%s.dat",cmd.suffixModel);
+    sprintf(gd.fpfnameclptfunctions,"CorrelationFunction%s.dat",cmd.suffixModel);
 }
-
-//#undef logfile
 
 local void ReadParameterFile(char *fname)
 {
@@ -344,16 +397,20 @@ local void ReadParameterFile(char *fname)
     IPName(cmd.Nk,"Nk");
 //
 // Modified gravity model parameters:
-    SPName(cmd.mgmodel,"mgmodel",100);
+    SPName(cmd.mgmodel,"mgModel",100);
     SPName(cmd.model_paramfile,"model_paramfile",100);
     SPName(cmd.suffixModel,"suffixModel",100);
     IPName(cmd.nHS,"nHS");
     RPName(cmd.fR0,"fR0");
-//    SPName(cmd.beta2str,"beta2",100);
-//    RPName(cmd.omegaBD,"omegaBD");
     RPName(cmd.screening,"screening");
 //
-    RPName(cmd.om,"om");
+// DGP:
+    RPName(cmd.eps_DGP,"eps_DGP");
+    RPName(cmd.rc_DGP,"rc_DGP");
+//
+// Background cosmology:
+    RPName(cmd.om,"Om");
+    SPName(cmd.olstr,"OL",100);
     RPName(cmd.h,"h");
 //
 // Differential equations evolution parameters:
@@ -365,7 +422,9 @@ local void ReadParameterFile(char *fname)
     IPName(cmd.maxnsteps,"maxnsteps");
 	SPName(cmd.integration_method,"integration_method",100);
 //
-// Integration parameters:
+// Quadrature parameters:
+    SPName(cmd.quadratureMethod,"quadratureMethod",100);
+    IPName(cmd.nquadSteps,"nquadSteps");
     IPName(cmd.ngausslegpoints,"ngausslegpoints");
     RPName(cmd.epsquad,"epsquad");
 //
@@ -469,16 +528,19 @@ local void PrintParameterFile(char *fname)
         fprintf(fdout,FMTI,"Nk",cmd.Nk);
 //
 // Modified gravity model parameters:
-        fprintf(fdout,FMTT,"mgmodel",cmd.mgmodel);
+        fprintf(fdout,FMTT,"mgModel",cmd.mgmodel);
         fprintf(fdout,FMTT,"model_paramfile",cmd.model_paramfile);
         fprintf(fdout,FMTT,"suffixModel",cmd.suffixModel);
         fprintf(fdout,FMTI,"nHS",cmd.nHS);
         fprintf(fdout,FMTR,"fR0",cmd.fR0);
-//        fprintf(fdout,FMTT,"beta2",cmd.beta2str);
-//        fprintf(fdout,FMTR,"omegaBD",cmd.omegaBD);
         fprintf(fdout,FMTR,"screening",cmd.screening);
+// DGP:
+        fprintf(fdout,FMTR,"eps_DGP",cmd.eps_DGP);
+        fprintf(fdout,FMTR,"rc_DGP",cmd.rc_DGP);
 //
-        fprintf(fdout,FMTR,"om",cmd.om);
+// Background cosmology:
+        fprintf(fdout,FMTR,"Om",cmd.om);
+        fprintf(fdout,FMTT,"OL",cmd.olstr);
         fprintf(fdout,FMTR,"h",cmd.h);
 //
 // Differential equations evolution parameters:
@@ -490,7 +552,9 @@ local void PrintParameterFile(char *fname)
         fprintf(fdout,FMTI,"maxnsteps",cmd.maxnsteps);
         fprintf(fdout,FMTT,"integration_method",cmd.integration_method);
 //
-// Integration parameters:
+// Quadrature parameters:
+        fprintf(fdout,FMTT,"quadratureMethod",cmd.quadratureMethod);
+        fprintf(fdout,FMTI,"nquadSteps",cmd.nquadSteps);
         fprintf(fdout,FMTI,"ngausslegpoints",cmd.ngausslegpoints);
         fprintf(fdout,FMTR,"epsquad",cmd.epsquad);
 // Post processing parameters:
@@ -531,8 +595,6 @@ local void ReadMGModelParameterFile(char *fname)
 // Modified gravity model parameters:
     IPName(cmd.nHS,"nHS");
     RPName(cmd.fR0,"fR0");
-//    SPName(cmd.beta2str,"beta2",100);
-//    RPName(cmd.omegaBD,"omegaBD");
     RPName(cmd.screening,"screening");
 //
     if((fd=fopen(fname,"r"))) {
@@ -627,8 +689,6 @@ local void PrintMGModelParameterFile(char *fname)
 // Modified gravity model parameters:
         fprintf(fdout,FMTI,"nHS",cmd.nHS);
         fprintf(fdout,FMTR,"fR0",cmd.fR0);
-//        fprintf(fdout,FMTT,"beta2",cmd.beta2str);
-//        fprintf(fdout,FMTR,"omegaBD",cmd.omegaBD);
         fprintf(fdout,FMTR,"screening",cmd.screening);
 //
         fprintf(fdout,"\n\n");
@@ -769,7 +829,6 @@ local void InputPSTable(void)
 
     kmin = kPos(PSLCDMtabtmp);
     kmax = kPos(PSLCDMtabtmp+nPSTabletmp-1);
-//    fprintf(gd.outlog,"\nkmin, kmax of the given power spectrum: %g %g",kmin, kmax);
     fprintf(gd.outlog,"\nkmin, kmax of the given power spectrum (with %d values): %g %g",
             kmin, kmax, nPSTabletmp);
     dktmp = (rlog10(kmax) - rlog10(kmin))/((real)(nPSTabletmp - 1));
@@ -931,4 +990,113 @@ local void GaussLegendrePoints(void)
     fprintf(gd.outlog," end of Gauss-Legendre computing (StartRun)\n\n");
 
 }
+
+//
+// Power spectrum interpolation routines:
+//
+global  real psLCDMf(real k)
+{
+    pointPSTableptr p, pf, pi;
+    int jl, ju, jm;
+    real dk, psftmp;
+    bool ascnd;
+    
+    pi = PSLCDMtab;
+    pf = PSLCDMtab+nPSTable-1;
+    
+    if ( k < kPos(pi) || k > kPos(pf) || nPSTable < 2 )
+        error("\n\npsLCDMf: k is out of range or nPSTable is wrong... %g %g %g\n",
+              k,kPos(pi),kPos(pf));
+    
+    ascnd = (kPos(pf) >= kPos(pi));
+    
+    jl=0;
+    ju=nPSTable-1;
+    while (ju-jl > 1) {
+        jm = (ju+jl) >> 1;
+        if (k >= kPos(pi+jm) == ascnd)
+            jl=jm;
+        else
+            ju=jm;
+    }
+    
+    p = PSLCDMtab + jl;
+    dk = kPos(p+1)-kPos(p);
+    psftmp = PS(p)+(PS(p+1)-PS(p))*(k-kPos(p))/dk;
+    return (psftmp);
+}
+
+global  real psInterpolation(real k, pointPSTableptr PSLtab, int nPSL)
+{
+    pointPSTableptr p, pf, pi;
+    int jl, ju, jm;
+    real dk, psftmp;
+    bool ascnd;
+    
+    pi = PSLtab;
+    pf = PSLtab+nPSL-1;
+    
+    if ( nPSL < 2 )
+        error("\n\npsInterpolation: nPSL is wrong... %g\n",nPSL);
+    
+    if ( k > kPos(pf) ) {
+        dk = kPos(pf) - kPos(pf-1);
+        if ( dk > kPos(pf) - k ) {
+            fprintf(stdout,"\n\npsInterpolation: warning!... extrapolating...\n",k);
+            psftmp = PS(pf)+(PS(pf)-PS(pf-1))*(k-kPos(pf))/dk;
+            return (psftmp);
+        } else
+            error("\n\npsInterpolation: k is out of range... %g\n",k);
+    }
+    
+    if ( k < kPos(pi) )
+        error("\n\npsInterpolation: k is out of range or nPSL is wrong... %g\n",k);
+    
+    ascnd = (kPos(pf) >= kPos(pi));
+    
+    jl=0;
+    ju=nPSL-1;
+    while (ju-jl > 1) {
+        jm = (ju+jl) >> 1;
+        if (k >= kPos(pi+jm) == ascnd)
+            jl=jm;
+        else
+            ju=jm;
+    }
+    
+    p = PSLtab + jl;
+    dk = kPos(p+1)-kPos(p);
+    psftmp = PS(p)+(PS(p+1)-PS(p))*(k-kPos(p))/dk;
+    fprintf(gd.outlog,"%g %g %d PSL points...\n",k, psftmp, nPSL);
+    fflush(gd.outlog);
+    
+    return (psftmp);
+}
+
+global  real psInterpolation_nr(real k, double kPS[], double pPS[], int nPS)
+{
+    pointPSTableptr pf, pi;
+    real psftmp;
+    real dps;
+    real kf, ki;
+    
+    pi = PSLCDMtab;
+    pf = PSLCDMtab+nPSTable-1;
+    ki = kPS[1];
+    kf = kPS[nPS];
+    
+    //
+    //    if ( pow(10.0,k) < ki )
+    //        fprintf(gd.outlog,"\n\npsInterpolation_nr: warning! :: k is out of range (%g, %g)... %g\n",
+    //                ki, kf, pow(10.0,k));
+    //    if ( pow(10.0,k) > kf )
+    //        fprintf(gd.outlog,"\n\npsInterpolation_nr: warning! :: k is out of range (%g, %g)... %g\n",
+    //                ki, kf, pow(10.0,k) );
+    
+    splint(kPS,pPS,pPS2,nPS,k,&psftmp);
+    
+    return (psftmp);
+}
+
+
 

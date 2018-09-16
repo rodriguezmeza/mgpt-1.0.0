@@ -1,5 +1,5 @@
 /*==============================================================================
- HEADER: globaldefs.h		[mglpt]
+ HEADER: globaldefs.h		[mgpt]
  Written by: Mario A. Rodriguez-Meza
  Starting date: January 2018
  Purpose: Definitions of global variables and parameters
@@ -59,7 +59,36 @@
 #endif
 
 
-#include "data_struc_defs.h"
+//#include "data_struc_defs.h"
+// CONTENTS OF data_struc_defs.h
+#if !defined(global)                    // global def question must be here
+#  define global extern
+#endif
+
+#define IPName(param,paramtext)                                        \
+{strcpy(tag[nt],paramtext);                                        \
+addr[nt]=&(param);                                                \
+id[nt++]=INT;}
+
+#define RPName(param,paramtext)                                        \
+{strcpy(tag[nt],paramtext);                                        \
+addr[nt]=&param;                                                    \
+id[nt++]=DOUBLE;}
+
+#define BPName(param,paramtext)                                        \
+{strcpy(tag[nt],paramtext);                                        \
+addr[nt]=&param;                                                    \
+id[nt++]=BOOLEAN;}
+
+#define SPName(param,paramtext,n)                                    \
+{strcpy(tag[nt],paramtext);                                        \
+param=(string) malloc(n);                                            \
+addr[nt]=param;                                                    \
+id[nt++]=STRING;}
+// END OF CONTENTS OF...
+
+
+
 #include "models.h"
 
 
@@ -67,11 +96,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define H02     2997.92458
+#define invH0     2997.92458
 #define PI2     9.8696044010893586188
 #define TWOPI2     19.739208802178716
 #define FOURPI2   39.4784176043574
 #define SIXPI2  59.21762640653615
+#define INVSQRTDTWOPI 0.39894228040143267794
 
 typedef struct {
 // Power spectrum table
@@ -95,8 +125,13 @@ typedef struct {
     string beta2str;
     real omegaBD;
     real screening;
+// DGP:
+    real eps_DGP;
+    real rc_DGP;
 //
+// Background cosmology:
     real om;
+    string olstr;
     real h;
 //
 // Differential equations evolution parameters:
@@ -107,7 +142,9 @@ typedef struct {
     string integration_method;
     real dxmin;
     real eps;
-// Integration parameters:
+// Quadrature parameters:
+    string quadratureMethod;
+    int nquadSteps;
     int ngausslegpoints;
     real epsquad;
 //
@@ -117,6 +154,7 @@ typedef struct {
 	real cpuinit;
 	real dx;
     int method_int;
+    int quadmethod_int;
 
 // Power spectrum table:
     real kminPSext;
@@ -125,7 +163,11 @@ typedef struct {
 // Modified gravity model parameters:
     real beta2;
 //
+// Background cosmology:
+    real ol;
+//
     char integration_method_comment[100];
+    char quadraturemethod_comment[100];
 
 	string headline0;
 	string headline1;
@@ -136,7 +178,7 @@ typedef struct {
 
 	FILE *outlog;
 
-	int stopflag;
+//	int stopflag;
     
     real xnow;
     real xout;
@@ -155,6 +197,7 @@ typedef struct {
     char fpfnamekfun[100];
     char fpfnameSPTPowerSpectrum[100];
     char fpfnameqfunctions[100];
+    char fpfnameclptfunctions[100];
 
     real kf;
     real k1;
@@ -170,10 +213,7 @@ global global_data gd;
 global cmdline_data cmd;
 
 global real *yout;
-#define NEQS            2
-#define NEQS3Order      20
 #define NEQS3Orderv2    10
-#define NEQS2Order      12
 #define NEQS2Orderv2    8
 #define NEQS1Order      2
 
@@ -205,44 +245,6 @@ typedef struct {
     real eta;
     real y1;
     real y2;
-} global_D1, *global_D1_ptr;
-
-#define etaD1(x)    (((global_D1_ptr) (x))->eta)
-#define DpD1(x)    (((global_D1_ptr) (x))->y1)
-#define DppD1(x)    (((global_D1_ptr) (x))->y2)
-//
-
-//
-typedef struct {
-    real eta;
-    real y1;
-    real y2;
-    real y3;
-    real y4;
-    real y5;
-    real y6;
-    real y7;
-    real y8;
-    real y9;
-    real y10;
-    real y11;
-    real y12;
-} global_D2, *global_D2_ptr;
-
-#define etaD2(x)    (((global_D2_ptr) (x))->eta)
-#define Dpk1D2(x)    (((global_D2_ptr) (x))->y1)
-#define Dpk2D2(x)    (((global_D2_ptr) (x))->y3)
-#define Dak1k2D2(x)    (((global_D2_ptr) (x))->y5)
-#define Dbk1k2D2(x)    (((global_D2_ptr) (x))->y7)
-#define DFLk1k2D2(x)    (((global_D2_ptr) (x))->y9)
-#define DdIk1k2D2(x)    (((global_D2_ptr) (x))->y11)
-//
-
-//
-typedef struct {
-    real eta;
-    real y1;
-    real y2;
     real y3;
     real y4;
     real y5;
@@ -256,44 +258,6 @@ typedef struct {
 #define Dpk2D2v2(x)    (((global_D2v2_ptr) (x))->y3)
 #define DA2D2(x)    (((global_D2v2_ptr) (x))->y5)
 #define DB2D2(x)    (((global_D2v2_ptr) (x))->y7)
-//
-
-//
-typedef struct {
-    real eta;
-    real y1;
-    real y2;
-    real y3;
-    real y4;
-    real y5;
-    real y6;
-    real y7;
-    real y8;
-    real y9;
-    real y10;
-    real y11;
-    real y12;
-    real y13;
-    real y14;
-    real y15;
-    real y16;
-    real y17;
-    real y18;
-    real y19;
-    real y20;
-} global_D3, *global_D3_ptr;
-
-#define etaD3(x)    (((global_D3_ptr) (x))->eta)
-#define DpkD3(x)    (((global_D3_ptr) (x))->y1)
-#define DppD3(x)    (((global_D3_ptr) (x))->y3)
-#define Da2D3(x)    (((global_D3_ptr) (x))->y5)
-#define Db2D3(x)    (((global_D3_ptr) (x))->y7)
-#define DFL2D3(x)    (((global_D3_ptr) (x))->y9)
-#define DdI2D3(x)    (((global_D3_ptr) (x))->y11)
-#define DIA3D3(x)    (((global_D3_ptr) (x))->y13)
-#define DIB3D3(x)    (((global_D3_ptr) (x))->y15)
-#define DIFL3D3(x)    (((global_D3_ptr) (x))->y17)
-#define DIdI3D3(x)    (((global_D3_ptr) (x))->y19)
 //
 
 //
@@ -424,6 +388,45 @@ typedef struct {
 #define Lapxicorrfun(x)    (((global_corrfunctions_ptr) (x))->Lapxi)
 #define nabla4xicorrfun(x)    (((global_corrfunctions_ptr) (x))->nabla4xi)
 //
+
+// BEGIN :: CLPT correlation auxiliary functions and structures
+typedef struct {
+    real r;
+    real xi;
+} global_zacorrfunctions, *global_zacorrfunctions_ptr;
+
+#define rzacorrfun(x)    (((global_zacorrfunctions_ptr) (x))->r)
+#define xizacorrfun(x)    (((global_zacorrfunctions_ptr) (x))->xi)
+
+typedef struct {
+    real r;
+    real xiA;
+    real xiW;
+    real xi10L;
+    real xi10loop;
+    real xi20L;
+    real xi20loop;
+    real xi01;
+    real xi02;
+    real xi11;
+    real Lapxi;
+    real nabla4xi;
+} global_clptcorrfunctions, *global_clptcorrfunctions_ptr;
+
+#define rclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->r)
+#define xiAclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xiA)
+#define xiWclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xiW)
+#define xi10Lclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi10L)
+#define xi10loopclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi10loop)
+#define xi20Lclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi20L)
+#define xi20loopclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi20loop)
+#define xi01clptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi01)
+#define xi02clptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi02)
+#define xi11clptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->xi11)
+#define Lapxiclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->Lapxi)
+#define nabla4xiclptcorrfun(x)    (((global_clptcorrfunctions_ptr) (x))->nabla4xi)
+// END :: CLPT correlation auxiliary functions and structures
+
 
 #endif // ! _globaldefs_h
 
