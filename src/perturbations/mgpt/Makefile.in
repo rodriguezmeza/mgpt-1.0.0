@@ -99,10 +99,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mgpt_OBJECTS = mgpt-main.$(OBJEXT) mgpt-mglpt_diffeqs.$(OBJEXT) \
-	mgpt-mglpt_io.$(OBJEXT) \
-	mgpt-mglpt_postprocess.$(OBJEXT) mgpt-mglpt_quads.$(OBJEXT) \
-	mgpt-mglpt.$(OBJEXT) mgpt-models.$(OBJEXT) \
+am_mgpt_OBJECTS = mgpt-main.$(OBJEXT) mgpt-mgpt_diffeqs.$(OBJEXT) \
+	mgpt-mgpt_io.$(OBJEXT) \
+	mgpt-mgpt_postprocess.$(OBJEXT) mgpt-mgpt_quads.$(OBJEXT) \
+	mgpt-mgpt.$(OBJEXT) mgpt-models.$(OBJEXT) \
 	mgpt-startrun.$(OBJEXT)
 mgpt_OBJECTS = $(am_mgpt_OBJECTS)
 mgpt_DEPENDENCIES = ../../general_libs/general/libgeneral.a \
@@ -124,10 +124,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/mgpt-main.Po \
-	./$(DEPDIR)/mgpt-mglpt.Po ./$(DEPDIR)/mgpt-mglpt_diffeqs.Po \
-	./$(DEPDIR)/mgpt-mglpt_io.Po \
-	./$(DEPDIR)/mgpt-mglpt_postprocess.Po \
-	./$(DEPDIR)/mgpt-mglpt_quads.Po ./$(DEPDIR)/mgpt-models.Po \
+	./$(DEPDIR)/mgpt-mgpt.Po ./$(DEPDIR)/mgpt-mgpt_diffeqs.Po \
+	./$(DEPDIR)/mgpt-mgpt_io.Po \
+	./$(DEPDIR)/mgpt-mgpt_postprocess.Po \
+	./$(DEPDIR)/mgpt-mgpt_quads.Po ./$(DEPDIR)/mgpt-models.Po \
 	./$(DEPDIR)/mgpt-startrun.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -268,11 +268,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 mgpt_SOURCES = main.c cmdline_defs.h globaldefs.h \
-mglpt_diffeqs.c mglpt_io.c mglpt_postprocess.c \
-mglpt_quads.c mglpt.c models.c models.h protodefs.h startrun.c 
+mgpt_diffeqs.c mgpt_io.c mgpt_postprocess.c \
+mgpt_quads.c mgpt.c models.c models.h protodefs.h startrun.c 
 
 
-#tests_mglpt_diffeqs.c tests_mglpt_quads.c tests_mglpt.c tests_models.c tests.h
+#tests_mgpt_diffeqs.c tests_mgpt_quads.c tests_mgpt.c tests_models.c tests.h
 mgpt_CPPFLAGS = -I$(top_srcdir)/src/general_libs/general -I$(top_srcdir)/src/general_libs/io -I$(top_srcdir)/src/general_libs/math
 mgpt_LDADD = ../../general_libs/general/libgeneral.a ../../general_libs/io/libio.a ../../general_libs/math/libmath.a
 AM_CFLAGS = -lm
@@ -363,11 +363,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-main.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mglpt.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mglpt_diffeqs.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mglpt_io.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mglpt_postprocess.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mglpt_quads.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mgpt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mgpt_diffeqs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mgpt_io.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mgpt_postprocess.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-mgpt_quads.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-models.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mgpt-startrun.Po@am__quote@ # am--include-marker
 
@@ -405,76 +405,76 @@ mgpt-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-mgpt-mglpt_diffeqs.o: mglpt_diffeqs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_diffeqs.o -MD -MP -MF $(DEPDIR)/mgpt-mglpt_diffeqs.Tpo -c -o mgpt-mglpt_diffeqs.o `test -f 'mglpt_diffeqs.c' || echo '$(srcdir)/'`mglpt_diffeqs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_diffeqs.Tpo $(DEPDIR)/mgpt-mglpt_diffeqs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_diffeqs.c' object='mgpt-mglpt_diffeqs.o' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_diffeqs.o: mgpt_diffeqs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_diffeqs.o -MD -MP -MF $(DEPDIR)/mgpt-mgpt_diffeqs.Tpo -c -o mgpt-mgpt_diffeqs.o `test -f 'mgpt_diffeqs.c' || echo '$(srcdir)/'`mgpt_diffeqs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_diffeqs.Tpo $(DEPDIR)/mgpt-mgpt_diffeqs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_diffeqs.c' object='mgpt-mgpt_diffeqs.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_diffeqs.o `test -f 'mglpt_diffeqs.c' || echo '$(srcdir)/'`mglpt_diffeqs.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_diffeqs.o `test -f 'mgpt_diffeqs.c' || echo '$(srcdir)/'`mgpt_diffeqs.c
 
-mgpt-mglpt_diffeqs.obj: mglpt_diffeqs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_diffeqs.obj -MD -MP -MF $(DEPDIR)/mgpt-mglpt_diffeqs.Tpo -c -o mgpt-mglpt_diffeqs.obj `if test -f 'mglpt_diffeqs.c'; then $(CYGPATH_W) 'mglpt_diffeqs.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_diffeqs.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_diffeqs.Tpo $(DEPDIR)/mgpt-mglpt_diffeqs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_diffeqs.c' object='mgpt-mglpt_diffeqs.obj' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_diffeqs.obj: mgpt_diffeqs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_diffeqs.obj -MD -MP -MF $(DEPDIR)/mgpt-mgpt_diffeqs.Tpo -c -o mgpt-mgpt_diffeqs.obj `if test -f 'mgpt_diffeqs.c'; then $(CYGPATH_W) 'mgpt_diffeqs.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_diffeqs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_diffeqs.Tpo $(DEPDIR)/mgpt-mgpt_diffeqs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_diffeqs.c' object='mgpt-mgpt_diffeqs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_diffeqs.obj `if test -f 'mglpt_diffeqs.c'; then $(CYGPATH_W) 'mglpt_diffeqs.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_diffeqs.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_diffeqs.obj `if test -f 'mgpt_diffeqs.c'; then $(CYGPATH_W) 'mgpt_diffeqs.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_diffeqs.c'; fi`
 
 
-mgpt-mglpt_io.o: mglpt_io.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_io.o -MD -MP -MF $(DEPDIR)/mgpt-mglpt_io.Tpo -c -o mgpt-mglpt_io.o `test -f 'mglpt_io.c' || echo '$(srcdir)/'`mglpt_io.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_io.Tpo $(DEPDIR)/mgpt-mglpt_io.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_io.c' object='mgpt-mglpt_io.o' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_io.o: mgpt_io.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_io.o -MD -MP -MF $(DEPDIR)/mgpt-mgpt_io.Tpo -c -o mgpt-mgpt_io.o `test -f 'mgpt_io.c' || echo '$(srcdir)/'`mgpt_io.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_io.Tpo $(DEPDIR)/mgpt-mgpt_io.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_io.c' object='mgpt-mgpt_io.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_io.o `test -f 'mglpt_io.c' || echo '$(srcdir)/'`mglpt_io.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_io.o `test -f 'mgpt_io.c' || echo '$(srcdir)/'`mgpt_io.c
 
-mgpt-mglpt_io.obj: mglpt_io.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_io.obj -MD -MP -MF $(DEPDIR)/mgpt-mglpt_io.Tpo -c -o mgpt-mglpt_io.obj `if test -f 'mglpt_io.c'; then $(CYGPATH_W) 'mglpt_io.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_io.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_io.Tpo $(DEPDIR)/mgpt-mglpt_io.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_io.c' object='mgpt-mglpt_io.obj' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_io.obj: mgpt_io.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_io.obj -MD -MP -MF $(DEPDIR)/mgpt-mgpt_io.Tpo -c -o mgpt-mgpt_io.obj `if test -f 'mgpt_io.c'; then $(CYGPATH_W) 'mgpt_io.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_io.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_io.Tpo $(DEPDIR)/mgpt-mgpt_io.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_io.c' object='mgpt-mgpt_io.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_io.obj `if test -f 'mglpt_io.c'; then $(CYGPATH_W) 'mglpt_io.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_io.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_io.obj `if test -f 'mgpt_io.c'; then $(CYGPATH_W) 'mgpt_io.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_io.c'; fi`
 
-mgpt-mglpt_postprocess.o: mglpt_postprocess.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_postprocess.o -MD -MP -MF $(DEPDIR)/mgpt-mglpt_postprocess.Tpo -c -o mgpt-mglpt_postprocess.o `test -f 'mglpt_postprocess.c' || echo '$(srcdir)/'`mglpt_postprocess.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_postprocess.Tpo $(DEPDIR)/mgpt-mglpt_postprocess.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_postprocess.c' object='mgpt-mglpt_postprocess.o' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_postprocess.o: mgpt_postprocess.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_postprocess.o -MD -MP -MF $(DEPDIR)/mgpt-mgpt_postprocess.Tpo -c -o mgpt-mgpt_postprocess.o `test -f 'mgpt_postprocess.c' || echo '$(srcdir)/'`mgpt_postprocess.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_postprocess.Tpo $(DEPDIR)/mgpt-mgpt_postprocess.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_postprocess.c' object='mgpt-mgpt_postprocess.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_postprocess.o `test -f 'mglpt_postprocess.c' || echo '$(srcdir)/'`mglpt_postprocess.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_postprocess.o `test -f 'mgpt_postprocess.c' || echo '$(srcdir)/'`mgpt_postprocess.c
 
-mgpt-mglpt_postprocess.obj: mglpt_postprocess.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_postprocess.obj -MD -MP -MF $(DEPDIR)/mgpt-mglpt_postprocess.Tpo -c -o mgpt-mglpt_postprocess.obj `if test -f 'mglpt_postprocess.c'; then $(CYGPATH_W) 'mglpt_postprocess.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_postprocess.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_postprocess.Tpo $(DEPDIR)/mgpt-mglpt_postprocess.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_postprocess.c' object='mgpt-mglpt_postprocess.obj' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_postprocess.obj: mgpt_postprocess.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_postprocess.obj -MD -MP -MF $(DEPDIR)/mgpt-mgpt_postprocess.Tpo -c -o mgpt-mgpt_postprocess.obj `if test -f 'mgpt_postprocess.c'; then $(CYGPATH_W) 'mgpt_postprocess.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_postprocess.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_postprocess.Tpo $(DEPDIR)/mgpt-mgpt_postprocess.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_postprocess.c' object='mgpt-mgpt_postprocess.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_postprocess.obj `if test -f 'mglpt_postprocess.c'; then $(CYGPATH_W) 'mglpt_postprocess.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_postprocess.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_postprocess.obj `if test -f 'mgpt_postprocess.c'; then $(CYGPATH_W) 'mgpt_postprocess.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_postprocess.c'; fi`
 
-mgpt-mglpt_quads.o: mglpt_quads.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_quads.o -MD -MP -MF $(DEPDIR)/mgpt-mglpt_quads.Tpo -c -o mgpt-mglpt_quads.o `test -f 'mglpt_quads.c' || echo '$(srcdir)/'`mglpt_quads.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_quads.Tpo $(DEPDIR)/mgpt-mglpt_quads.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_quads.c' object='mgpt-mglpt_quads.o' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_quads.o: mgpt_quads.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_quads.o -MD -MP -MF $(DEPDIR)/mgpt-mgpt_quads.Tpo -c -o mgpt-mgpt_quads.o `test -f 'mgpt_quads.c' || echo '$(srcdir)/'`mgpt_quads.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_quads.Tpo $(DEPDIR)/mgpt-mgpt_quads.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_quads.c' object='mgpt-mgpt_quads.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_quads.o `test -f 'mglpt_quads.c' || echo '$(srcdir)/'`mglpt_quads.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_quads.o `test -f 'mgpt_quads.c' || echo '$(srcdir)/'`mgpt_quads.c
 
-mgpt-mglpt_quads.obj: mglpt_quads.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt_quads.obj -MD -MP -MF $(DEPDIR)/mgpt-mglpt_quads.Tpo -c -o mgpt-mglpt_quads.obj `if test -f 'mglpt_quads.c'; then $(CYGPATH_W) 'mglpt_quads.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_quads.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt_quads.Tpo $(DEPDIR)/mgpt-mglpt_quads.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt_quads.c' object='mgpt-mglpt_quads.obj' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt_quads.obj: mgpt_quads.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt_quads.obj -MD -MP -MF $(DEPDIR)/mgpt-mgpt_quads.Tpo -c -o mgpt-mgpt_quads.obj `if test -f 'mgpt_quads.c'; then $(CYGPATH_W) 'mgpt_quads.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_quads.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt_quads.Tpo $(DEPDIR)/mgpt-mgpt_quads.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt_quads.c' object='mgpt-mgpt_quads.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt_quads.obj `if test -f 'mglpt_quads.c'; then $(CYGPATH_W) 'mglpt_quads.c'; else $(CYGPATH_W) '$(srcdir)/mglpt_quads.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt_quads.obj `if test -f 'mgpt_quads.c'; then $(CYGPATH_W) 'mgpt_quads.c'; else $(CYGPATH_W) '$(srcdir)/mgpt_quads.c'; fi`
 
-mgpt-mglpt.o: mglpt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt.o -MD -MP -MF $(DEPDIR)/mgpt-mglpt.Tpo -c -o mgpt-mglpt.o `test -f 'mglpt.c' || echo '$(srcdir)/'`mglpt.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt.Tpo $(DEPDIR)/mgpt-mglpt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt.c' object='mgpt-mglpt.o' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt.o: mgpt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt.o -MD -MP -MF $(DEPDIR)/mgpt-mgpt.Tpo -c -o mgpt-mgpt.o `test -f 'mgpt.c' || echo '$(srcdir)/'`mgpt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt.Tpo $(DEPDIR)/mgpt-mgpt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt.c' object='mgpt-mgpt.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt.o `test -f 'mglpt.c' || echo '$(srcdir)/'`mglpt.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt.o `test -f 'mgpt.c' || echo '$(srcdir)/'`mgpt.c
 
-mgpt-mglpt.obj: mglpt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mglpt.obj -MD -MP -MF $(DEPDIR)/mgpt-mglpt.Tpo -c -o mgpt-mglpt.obj `if test -f 'mglpt.c'; then $(CYGPATH_W) 'mglpt.c'; else $(CYGPATH_W) '$(srcdir)/mglpt.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mglpt.Tpo $(DEPDIR)/mgpt-mglpt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mglpt.c' object='mgpt-mglpt.obj' libtool=no @AMDEPBACKSLASH@
+mgpt-mgpt.obj: mgpt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-mgpt.obj -MD -MP -MF $(DEPDIR)/mgpt-mgpt.Tpo -c -o mgpt-mgpt.obj `if test -f 'mgpt.c'; then $(CYGPATH_W) 'mgpt.c'; else $(CYGPATH_W) '$(srcdir)/mgpt.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/mgpt-mgpt.Tpo $(DEPDIR)/mgpt-mgpt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mgpt.c' object='mgpt-mgpt.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mglpt.obj `if test -f 'mglpt.c'; then $(CYGPATH_W) 'mglpt.c'; else $(CYGPATH_W) '$(srcdir)/mglpt.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mgpt-mgpt.obj `if test -f 'mgpt.c'; then $(CYGPATH_W) 'mgpt.c'; else $(CYGPATH_W) '$(srcdir)/mgpt.c'; fi`
 
 mgpt-models.o: models.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(mgpt_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mgpt-models.o -MD -MP -MF $(DEPDIR)/mgpt-models.Tpo -c -o mgpt-models.o `test -f 'models.c' || echo '$(srcdir)/'`models.c
@@ -632,11 +632,11 @@ clean-am: clean-binPROGRAMS clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/mgpt-main.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_diffeqs.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_io.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_postprocess.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_quads.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_diffeqs.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_io.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_postprocess.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_quads.Po
 	-rm -f ./$(DEPDIR)/mgpt-models.Po
 	-rm -f ./$(DEPDIR)/mgpt-startrun.Po
 	-rm -f Makefile
@@ -685,11 +685,11 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/mgpt-main.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_diffeqs.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_io.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_postprocess.Po
-	-rm -f ./$(DEPDIR)/mgpt-mglpt_quads.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_diffeqs.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_io.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_postprocess.Po
+	-rm -f ./$(DEPDIR)/mgpt-mgpt_quads.Po
 	-rm -f ./$(DEPDIR)/mgpt-models.Po
 	-rm -f ./$(DEPDIR)/mgpt-startrun.Po
 	-rm -f Makefile
