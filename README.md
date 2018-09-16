@@ -12,7 +12,7 @@ alejandro.aviles.conacyt@inin.gob.mx, avilescervantes@gmail.com
 #
 
 
-MGPT (Modified Gravity Perturbation Theory) code computes 2-point statistics for LCDM model and Hu-Sawicky-Starobinsky f(R) gravity. It is easily modifiable to other models. 
+MGPT (Modified Gravity Perturbation Theory) code computes 2-point statistics for LCDM model, DGP and Hu-Sawicky-Starobinsky f(R) gravity. The source code can be adapted for other models. 
 
 Specifically, it computes:
 
@@ -29,7 +29,7 @@ Specifically, it computes:
 The code units are Mpc/h. 
 
 The power spectrum convention is 
-(2pi)^3 delta_D(k+k') P(k) = <delta(k) delta(k')> 
+(2pi)^3 delta_D(k+k') P(k) = $<delta(k) delta(k')>$ 
 
 
 The code is divided in three pieces: I. MGPT-PS; II. MGPT-qfunctions; and III. MGPT-CLPT
@@ -71,10 +71,10 @@ For help:
 In help you can see how to change parameters, for example:
 
 ```
-/MGPT$ ./mgpt om=0.3 h=0.7 fR0=1.0e-6 
+/MGPT$ ./mgpt om=0.3 h=0.7 fR0=1.0e-6 ol=0.6 suffix=_F6 
 ```
 
-computes Hu-Sawicky f_R0 = -10^-6, and background cosmology h=0.7, Omega_m = 0.3.
+computes Hu-Sawicky f_R0 = -10^-6, and LCDM background cosmology with h=0.7, Omega_m = 0.3 Omega_L (default is Omega_L=1-Omega_m). The output files will have a suffix _F6
 
 Option screening=1 is the default with screenings, set to screening=0 if you want no screenings.
 
@@ -145,7 +145,7 @@ Ploop_X = Ploop_X - 2 (1 + b1)b_{01} k^2 PSL + b_{01}^2 k^4 PSL
 In this notation b_{01} = - b_{\nabla^2}
 
 
-### output b) MGPT/CLPT/kfunctionsT.dat
+### output b) MGPT/CLPT/kfunctions.dat
 
 kfunctionsT.dat file contains all the Q(k) and R(k) functions. It is the input of the code MGPT-qfunctions.
 
@@ -177,9 +177,9 @@ kfunctionsT.dat file contains all the Q(k) and R(k) functions. It is the input o
 CLPT/MGPT_qfunctions.nb is a Mathematica notebook that post-process the file kfunctionsT.dat to obtain a set of q-functions
 that are the building blocks of the CLPT correlation function. This code is independent of the gravitational or dark energy model, just fed it with the appropriate file structure. 
 
-The input is the file kfunctionsT.dat obtained with MGPT-PS (or by other code of your preference)
+The input is the file kfunctions.dat obtained with MGPT-PS (or by other code of your preference)
 
-The output is the file qfunctionsT.dat, with columns structure
+The output is the file qfunctions.dat, with columns structure
 
 
 
