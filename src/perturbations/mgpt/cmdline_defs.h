@@ -27,7 +27,7 @@
 #define _cmdline_defs_h
 
 #define HEAD1	"NagBody"
-#define HEAD2	"mgpt Code for the Modified Gravity-Perturbation Theory."
+#define HEAD2	"mgpt Code for the Modified gravity perturbation theory."
 #define HEAD3	"..."
 
 string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
@@ -35,47 +35,59 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
 //
 // Power spectrum table:
     "fnamePS=psLCDM.in",		    ";Filename with power spectrum table",
-    "kmin=1e-4",                    ";kmin to analyse from the power spectrum table",
-    "kmax=100",                      ";kmax to analyse from the power spectrum table",
-    "Nk=300",                       ";Total number of k´s analyse from the power spectrum table",":nk",
+    "kmin=1e-3",                    ";kmin to analyse from the power spectrum table",
+    "kmax=100",                     ";kmax to analyse from the power spectrum table",
+    "Nk=250",                       ";Total number of k´s analyse from the power spectrum table",":nk",
+// Power spectrum table interpolation and extrapolation parameters:
+    "kminT=1e-5",               ";kmin of extended (power spectrum table)",
+    "kmaxT=400",                 ";kmax of extended (power spectrum table)",
+    "Nkext=800",        ";Total number of extended k´s (power spectrum table)",
+    "NkL=50",          ";NLower limit of extended k´s (power spectrum table)",
+    "NkU=50",           ";NUper limit of extended k´s (power spectrum table)",
+    "NPTL=5",        ";Total number of k to linear fit left side (power spectrum table)",
+    "NPTR=12",        ";Total number of k to linear fit right side (power spectrum table)",
 //
+// CLPT correlation functions table:
+    "rmin=50",                      ";rmin of the range for CLPT correlation functions table",
+    "rmax=130",                     ";rmax of the range for CLPT correlation functions table",
+    "Nr=100",                       ";Total number of r´s to analyse for the CLPT correlation functions table",":nr",
 // Modified gravity model parameters:
-    "mgModel=HS",                   ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
-    "suffixModel=",               ";Suffix model to add to output filenames", ":suffix",
-    "nHS=1",                        ";Hu-Sawicki index",
-    "fR0=1.0e-5",                   ";Hu-Sawicki f_R0",
-    "screening=1.0",                ";Hu-Sawicki screening", ":sc",
+    "mgModel=LCDM",                 ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
+    "suffixModel=",                 ";Suffix model to add to output filenames", ":suffix",
+//    "nHS=1",                        ";Hu-Sawicky index",
+    "fR0=1.0e-5",                   ";Hu-Sawicky f_R0",
+    "screening=1.0",                ";Hu-Sawicky screening", ":sc",
 // DGP:
-    "eps_DGP=-1.0",                  ";DGP parameter, use with mgModel=DGP",":epsdgp",
-    "rc_DGP=1.0",                       ";DGP parameter, use with mgModel=DGP",":rcdgp",
+    "epsDGP=-1.0",                  ";DGP parameter, use with mgModel=DGP",":epsdgp",
+    "rcDGP=1.0",                    ";DGP parameter, use with mgModel=DGP",":rcdgp",
 //
-    "model_paramfile=fofRHS.in",	";If mgmodel is not the default, give its parameter file name", ":mpf",
+    "modelParamfile=",	            ";If mgmodel=USER, you may give its parameter file name", ":mpf",
 //
 // Background cosmology:
     "Om=0.281",                     ";Omega matter value (z=0)",":om",
-    "OL= 1 - Om",                     ";Omega Lambda value (z=0)",":ol",
+    "OL= 1 - Om",                   ";Omega Lambda value (z=0)",":ol",
     "h=0.697",                      ";Hubble parameter value (z=0)",
 //
 // Differential equations evolution parameters:
-    "etaini=-4.0",                    ";Initial eta value :: Log[1/(1 + zini)]",
+    "etaini=-4.0",                  ";Initial eta value :: Log[1/(1 + zini)]",
     "deta=2/5",                     ";deta integration step",
     "detamin=0.",                   ";Min eta integration step size",
     "eps=1.0e-4",                   ";Error parameter",
-    "zout=0.0",                    ";redshift value to stop integration :: eta = exp[-zout] - 1",
+    "zout=0.0",                     ";Output redshift value",
     "maxnsteps=10000",              ";Maximum number of integration steps", ":maxn",
-    "integration_method=bsstep",	";Integration method to use", ":im",
+    "solverMethod=bsstep",	        ";Integration method to solve differential equations", ":im",
 //
 // Quadrature parameters:
-    "quadratureMethod=trapezoid",      ";Quadrature method to use", ":quadm",
-    "nquadSteps=100",               ";Number of k´s from the power spectrum table to integrate (trapezoid)",":nquad",
+    "quadratureMethod=trapezoid",   ";Quadrature method to use", ":quadm",
+    "nquadSteps=200",               ";Number of k´s from the power spectrum table to integrate (trapezoid)",":nquad",
     "ngausslegpoints=10",           ";Number of Gauss-Legendre of integration points", ":nglpts",
-    "epsquad=1.0e-5",               ";Quadrature tolerance error parameter (open Romberg method)",
+    "epsquad=1.0e-5",               ";Quadrature tolerance error parameter (Romberg method: romberg)",
 //
 // Post processing parameters:
     "postprocessing=false",			";Post processing options", ":pp",
     "options=",                     ";Various control options", ":opt",
 //
-    "Version=1.0.0",                ";Mario A. Rodríguez-Meza 2005-2018",
+    "Version=1.0.0",                ";Mario A. Rodríguez-Meza/Alejandro Aviles 2018",
     NULL,
 };
 

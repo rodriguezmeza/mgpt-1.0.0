@@ -26,6 +26,8 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
+#define KK  5       // K=2 is the Simpson's rule
+
 #define EPSQ 1.0e-6
 
 local  real Interpolation_nr(real k, double kPS[], double pPS[], int nPS, double pPS2[]);
@@ -307,13 +309,25 @@ local real *PSLMGT;
 local real *PSLMGT2;
 
 
+//#define FMTCORRELATIONFUNCTIONSDAT    \
+//"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+//%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+//%10.3e\n"
+
+#define FMTCORRELATIONFUNCTIONSDAT    \
+"%e %e %e %e %e %e %e %e \
+%e %e %e %e %e %e \
+%e\n"
+
 global void CLPT_correlation_processing(void)
 {
     stream outstr;
     pointqfunctionsTableptr p;
     real aTime;
-    real rmin, rmax, dr, ri;
-    int i, Nr;
+//    real rmin, rmax,
+    real dr, ri;
+    int i;
+//    Nr;
 
     global_zacorrfunctions zacorrfun;
     global_clptcorrfunctions clptcorrfun;
@@ -394,28 +408,46 @@ global void CLPT_correlation_processing(void)
     spline(qTab,LapxiT,nqfunctionsTable,1.0e30,1.0e30,LapxiT2);
     spline(qTab,nabla4xiT,nqfunctionsTable,1.0e30,1.0e30,nabla4xiT2);
 
-    rmin = 50.0;
-    rmax = 130.0;
-    Nr = 100;
+//    cmd.rmin = 50.0;
+//    cmd.rmax = 130.0;
+//    cmd.Nr = 100;
     fprintf(stdout,"\nTesting Nr values from rmin to rmax to compute CLPT: %d %g %g\n",
-            Nr, rmin, rmax);
-    if (Nr==1) {
+            cmd.Nr, cmd.rmin, cmd.rmax);
+    if (cmd.Nr==1) {
         dr = 0.;
     } else
-        dr = (rmax - rmin)/((real)(Nr - 1));
+        dr = (cmd.rmax - cmd.rmin)/((real)(cmd.Nr - 1));
 
     fprintf(stdout,"\nWriting CLPT correlation functions to file %s...",
             gd.fpfnameclptfunctions);
     outstr = stropen(gd.fpfnameclptfunctions,"w!");
 
-    for (i=1; i<=Nr; i++) {
-        aTime = cputime();
-        ri = rmin + dr*((real)(i - 1));
+    fprintf(outstr,"%1s%5s%13s%12s%10s%11s%12s%12s%10s%12s%10s%11s%11s%11s%12s%11s",
+            "#","r","<xiL>","<xiZA>","<xiA>",
+            "<xiW>","<xi10L>","<xi10loop>","<xi20L>",
+            "<xi20loop>","<xi01>","<xi02>","<xi11>",
+            "<Lapxi>","<nabla4xi>",
+            "<xiCLPT>\n");
+    
+    fprintf(outstr,
+            "%1s%6s%11s%11s%11s%11s%11s%11s%11s%11s%12s%11s%11s%11s%11s%11s",
+            "#","<1>","<2>","<3>","<4>",
+            "<5>","<6>","<7>","<8>",
+            "<9>","<10>","<11>","<12>",
+            "<13>","<14>",
+            "<15>\n");
+
+    for (i=1; i<=cmd.Nr; i++) {
+//        aTime = cputime();
+        aTime = second();
+        ri = cmd.rmin + dr*((real)(i - 1));
         zacorrfun = zacorrelation_functions(ri);
         clptcorrfun = clptcorrelation_functions(ri);
 
-        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g %g %g %g\n",
+//        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g\n",
+        fprintf(outstr,FMTCORRELATIONFUNCTIONSDAT,
                 zacorrfun.r,
+                xiLF(ri),
                 zacorrfun.xi,
                 clptcorrfun.xiA,
                 clptcorrfun.xiW,
@@ -427,7 +459,8 @@ global void CLPT_correlation_processing(void)
                 clptcorrfun.xi02,
                 clptcorrfun.xi11,
                 clptcorrfun.Lapxi,
-                clptcorrfun.nabla4xi
+                clptcorrfun.nabla4xi,
+                zacorrfun.xi+clptcorrfun.xiA+clptcorrfun.xiW
                 );
     }
     fclose(outstr);
@@ -466,7 +499,18 @@ global void CLPT_correlation_processing(void)
     free_dvector(qTab,1,nqfunctionsTable);
     free(Pqfunctab);
 }
+#undef FMTCORRELATIONFUNCTIONSDAT
 
+
+//#define FMTQFUNCTIONSDAT    \
+//"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+//%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+//%10.3e\n"
+
+#define FMTQFUNCTIONSDAT    \
+"%e %e %e %e %e %e %e %e \
+%e %e %e %e %e %e %e \
+%e\n"
 
 global void qfunctions_processing(void)
 {
@@ -488,6 +532,7 @@ global void qfunctions_processing(void)
     if (nQsRsTable<=1) {
         error("\nNumber of k's in kfunctions table must be greater than 1...\n\n",nQsRsTable);
     }
+
     kTab = dvector(1,nQsRsTable);
     Q1T = dvector(1,nQsRsTable);
     Q1T2 = dvector(1,nQsRsTable);
@@ -549,15 +594,33 @@ global void qfunctions_processing(void)
 //
     fprintf(stdout,"\nWriting q functions to file %s...",gd.fpfnameqfunctions);
     outstr = stropen(gd.fpfnameqfunctions,"w!");
+
+    fprintf(outstr,"%1s%5s%12s%11s%13s%11s%9s%11s%12s%11s%11s%13s%8s%11s%11s%13s%13s",
+            "#","q","<XL>","<YL>","<Xloop>",
+            "<Yloop>","<VT>","<TT>","<X10>",
+            "<Y10>","<U10L>","<U10loop>","<U11>",
+            "<U20>","<xi>","<Lapxi>",
+            "<nabla4xi>\n");
+    
+    fprintf(outstr,
+            "%1s%6s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%12s",
+            "#","<1>","<2>","<3>","<4>",
+            "<5>","<6>","<7>","<8>",
+            "<9>","<10>","<11>","<12>",
+            "<13>","<14>","<15>",
+            "<16>\n");
+
     for (i=1; i<=Nq; i++) {
-        aTime = cputime();
+//        aTime = cputime();
+        aTime = second();
         qval = rlog10(qmin) + dq*((real)(i - 1));
         qi = rpow(10.0,qval);
         fflush(stdout);
         qfun = qfunctions(qi);
         corrfun = correlation_functions(qi);
 
-        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %g %g\n",
+//        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g %g %g %g %g %g %g\n",
+        fprintf(outstr,FMTQFUNCTIONSDAT,
                 qfun.q,
                 qfun.XL,
                 qfun.YL,
@@ -602,6 +665,13 @@ global void qfunctions_processing(void)
     free_dvector(kTab,1,nQsRsTable);
     free(PQsRstab);
 }
+#undef FMTQFUNCTIONSDAT
+
+
+#define FMTBIASTERMDAT    \
+"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+%10.3e\n"
+//%10.3e %10.3e %10.3e\n"
 
 global void biasterms_processing(void)
 {
@@ -627,7 +697,11 @@ global void biasterms_processing(void)
 
     fprintf(stdout,"\n\nBias terms processing...\n");
     InputQsRsTable();
-    
+
+    if (nQsRsTable<=1) {
+        error("\nNumber of k's in kfunctions table must be greater than 1...\n\n",nQsRsTable);
+    }
+/*
     kTab = dvector(1,nQsRsTable);
     PSLMGT = dvector(1,nQsRsTable);
     PSLMGT2 = dvector(1,nQsRsTable);
@@ -638,8 +712,9 @@ global void biasterms_processing(void)
         i++;
     }
     spline(kTab,PSLMGT,nQsRsTable,1.0e30,1.0e30,PSLMGT2);
-
+*/
     sigma2L = sigma2L_function();
+    sigma2L = 36.6897;
     fprintf(stdout,"\n\nsigma2L = %g\n",sigma2L);
     
 // a02 offset
@@ -648,36 +723,60 @@ global void biasterms_processing(void)
     fprintf(stdout,"\n\nWriting bias terms and the power spectrum to file %s...",
             gd.fpfnameSPTPowerSpectrum);
     outstr = stropen(gd.fpfnameSPTPowerSpectrum,"w!");
+
+    fprintf(outstr,"%1s%5s%13s%11s%11s%11s%11s%11s%11s%11s%13s",
+            "#","k","<PSLT>","<P22>","<P13>",
+            "<a10>","<a01>","<a20>","<a11>","<a02>",
+            "<Ploop>\n");
+    
+    fprintf(outstr,
+            "%1s%6s%11s%11s%11s%11s%11s%11s%11s%11s%12s",
+            "#","<1>","<2>","<3>","<4>","<5>","<6>","<7>","<8>","<9>","<10>\n");
+
     for (p=PQsRstab; p<PQsRstab+nQsRsTable; p++) {
 
         k = kQsRs(p);
-        PSLT = PSMGLQsRs(p);
+//        PSLT = PSMGLQsRs(p);
+        PSLT = psInterpolation_nr(k, kPS, pPS, nPSLT);
         P22 = (9./98.)*Q1QsRs(p) + (3./7.)*Q2QsRs(p) + (1./2.)*Q3QsRs(p);
 
 //        P13 = (10./21.)*R1QsRs(p) + (6./7.)*Q2QsRs(p) - sigma2L*k*k*PSLT;
         P13 = (10./21.)*R1QsRs(p) + (6./7.)*R2QsRs(p) - sigma2L*k*k*PSLT;
 
-        a10 = (10./21.)*R1QsRs(p) + (6./7.)*R1plus2QsRs(p) + (6./7.)*R2QsRs(p)
-                + (6./7.)*Q5QsRs(p) + 2.*Q7QsRs(p) + 2.*(1. - sigma2L*k*k)*PSLT;
+//        a10 = (10./21.)*R1QsRs(p) + (6./7.)*R1plus2QsRs(p) + (6./7.)*R2QsRs(p)
+//                + (6./7.)*Q5QsRs(p) + 2.*Q7QsRs(p) + 2.*(1. - sigma2L*k*k)*PSLT;
+
+        a10 = (10./21.)*R1QsRs(p) + 2.*(1. - sigma2L*k*k)*PSLT;
+        a10 += (6./7.)*(R1plus2QsRs(p) + R2QsRs(p) + Q5QsRs(p)) + 2.*Q7QsRs(p);
+
         a01 = Q9QsRs(p) + (3./7.)*Q8QsRs(p);
         a20 = Q11QsRs(p) + (1. - sigma2L*k*k)*PSLT
               + Q9QsRs(p) + (6./7.)*R1plus2QsRs(p);
         a11 = 2.*Q12QsRs(p);
         a02 = (1./2.)*Q13QsRs(p) - a02Off;
         Ploop = PSLT + P22 + P13;
-        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g\n",
-                k, PSLT,
-                P22, rabs(P13), a10, rabs(a01), a20, a11, rabs(a02), Ploop
+//        fprintf(outstr,"%g %g %g %g %g %g %g %g %g %g\n",
+//                k, PSLT,
+//                P22, rabs(P13), a10, rabs(a01), a20, a11, rabs(a02), Ploop
+//                );
+        fprintf(outstr,FMTBIASTERMDAT,
+                k, PSLT, P22, P13, a10, a01, a20, a11, a02,
+                Ploop
+//                Ploop,
+//                (10./21.)*R1QsRs(p) + (6./7.)*R1plus2QsRs(p) + (6./7.)*R2QsRs(p)
+//                + (6./7.)*Q5QsRs(p) + 2.*Q7QsRs(p),
+//                rabs(2.*(1. - sigma2L*k*k)*PSLT)
                 );
     }
     fclose(outstr);
     fprintf(stdout," finished writing.\n");
 //
-    free_dvector(PSLMGT2,1,nQsRsTable);
+/*    free_dvector(PSLMGT2,1,nQsRsTable);
     free_dvector(PSLMGT,1,nQsRsTable);
-    free_dvector(kTab,1,nQsRsTable);
+    free_dvector(kTab,1,nQsRsTable); */
     free(PQsRstab);
 }
+#undef FMTBIASTERMDAT
 
 local void InputqfunctionsTable(void)
 {
@@ -1103,14 +1202,16 @@ local real YLF(real q)
 local real XloopF(real q)
 {
     real func;
-    func = Interpolation_nr(q, qTab, YloopT, nqfunctionsTable, YloopT2);
+//    func = Interpolation_nr(q, qTab, YloopT, nqfunctionsTable, YloopT2);
+    func = Interpolation_nr(q, qTab, XloopT, nqfunctionsTable, XloopT2);
     return (func);
 }
 
 local real YloopF(real q)
 {
     real func;
-    func = Interpolation_nr(q, qTab, XloopT, nqfunctionsTable, XloopT2);
+//    func = Interpolation_nr(q, qTab, XloopT, nqfunctionsTable, XloopT2);
+    func = Interpolation_nr(q, qTab, YloopT, nqfunctionsTable, YloopT2);
     return (func);
 }
 
@@ -1790,7 +1891,8 @@ global_qfunctions qfunctions(real qi)
 {
     global_qfunctions_ptr qfunp;
     int i, Nk;
-    real kmin, kmax, dk, kvali, kvalim1, ki, kim1;
+//    real kmin, kmax,
+    real dk, kvali, kvalim1, ki, kim1;
     real kk;
     real deltak;
 //
@@ -1811,44 +1913,47 @@ global_qfunctions qfunctions(real qi)
 
     qfunp = (global_qfunctions_ptr) allocate(1 * sizeof(global_qfunctions));
 
-    kmin = 0.0001;
-    kmax = 100.0;
+//    kmin = 0.0001;
+//    kmax = 100.0;
+//    cmd.kmin = 0.0001;
+//    cmd.kmax = 100.0;
     Nk = 1200;
     if (Nk==1)
         dk = 0.;
     else
-        dk = (rlog10(kmax) - rlog10(kmin))/((real)(Nk - 1));
-    
+        dk = (rlog10(cmd.kmax) - rlog10(cmd.kmin))/((real)(Nk - 1));
+//    dk = (rlog10(kmax) - rlog10(kmin))/((real)(Nk - 1));
+
     U10Lp = 0.;
-    U10LA = -kmin*PSLF(kmin)*rj1Bessel(kmin*qi);
+    U10LA = -cmd.kmin*PSLF(cmd.kmin)*rj1Bessel(cmd.kmin*qi);
     U10loopp = 0.;
-    U10loopA = -kmin*( (5./21.)*R1F(kmin) )*rj1Bessel(kmin*qi);
+    U10loopA = -cmd.kmin*( (5./21.)*R1F(cmd.kmin) )*rj1Bessel(cmd.kmin*qi);
     U11p = 0.;
-    U11A = -kmin*( (6./7.)*R1plus2F(kmin) )*rj1Bessel(kmin*qi);
+    U11A = -cmd.kmin*( (6./7.)*R1plus2F(cmd.kmin) )*rj1Bessel(cmd.kmin*qi);
     U20p = 0.;
-    U20A = -kmin*( (3./7.)*Q8F(kmin) )*rj1Bessel(kmin*qi);
+    U20A = -cmd.kmin*( (3./7.)*Q8F(cmd.kmin) )*rj1Bessel(cmd.kmin*qi);
 //
     XLp = 0.;
-    XLA = xL(kmin, qi);
+    XLA = xL(cmd.kmin, qi);
     Xloopp = 0.;
-    XloopA = xloop(kmin, qi);
+    XloopA = xloop(cmd.kmin, qi);
     X10p = 0.;
-    X10A = x10(kmin, qi);
+    X10A = x10(cmd.kmin, qi);
     YLp = 0.;
-    YLA = yL(kmin, qi);
+    YLA = yL(cmd.kmin, qi);
     Yloopp = 0.;
-    YloopA = yloop(kmin, qi);
+    YloopA = yloop(cmd.kmin, qi);
     Y10p = 0.;
-    Y10A = y10(kmin, qi);
+    Y10A = y10(cmd.kmin, qi);
 //
     preVp = 0.;
-    preVA = tildeV(kmin)*rj1Bessel(kmin*qi)/kmin;
+    preVA = tildeV(cmd.kmin)*rj1Bessel(cmd.kmin*qi)/cmd.kmin;
     Tp = 0.;
-    TA = tildeT(kmin)*rj3Bessel(kmin*qi)/kmin;
+    TA = tildeT(cmd.kmin)*rj3Bessel(cmd.kmin*qi)/cmd.kmin;
 //
     for (i=2; i<=Nk; i++) {
-        kvali = rlog10(kmin) + dk*((real)(i - 1));
-        kvalim1 = rlog10(kmin) + dk*((real)(i - 2));
+        kvali = rlog10(cmd.kmin) + dk*((real)(i - 1));
+        kvalim1 = rlog10(cmd.kmin) + dk*((real)(i - 2));
         ki = rpow(10.0,kvali);
         kim1 = rpow(10.0,kvalim1);
         deltak = (ki - kim1);
@@ -2029,10 +2134,12 @@ local real sigma2L_function(void)
     ymax = rlog10(kmax);
 
     result= (1.0/SIXPI2)*rlog(10.0)
-    *qromo(sigma2L_function_int,ymin,ymax,midpnt,EPSQ);
+    *qromo(sigma2L_function_int,ymin,ymax,midpnt,EPSQ,KK);
     
     return result;
 
 }
 
 #undef EPSQ
+#undef KK
+

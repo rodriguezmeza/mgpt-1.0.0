@@ -26,8 +26,8 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
-local void ReadMGModelParameterFile(char *);
-local void PrintMGModelParameterFile(char *);
+//local void ReadMGModelParameterFile(char *);
+//local void PrintMGModelParameterFile(char *);
 
 local void ReadParameterFile(char *);
 local void PrintParameterFile(char *);
@@ -39,8 +39,8 @@ local void startrun_Common(void);
 local void startrun_ParamStat(void);
 local void CheckParameters(void);
 
-local void setFilesDirs_log(void);
-local void setFilesDirs(void);
+//local void setFilesDirs_log(void);
+//local void setFilesDirs(void);
 
 local void InputPSTable(void);
 local void PSLTable(void);
@@ -91,22 +91,34 @@ local void ReadParametersCmdline(void)
 {
 // Modified gravity model parameters:
     cmd.mgmodel = GetParam("mgModel");
-    cmd.model_paramfile = GetParam("model_paramfile");
+    cmd.model_paramfile = GetParam("modelParamfile");
     cmd.suffixModel = GetParam("suffixModel");
-    cmd.nHS = GetiParam("nHS");
+//    cmd.nHS = GetiParam("nHS");
     cmd.fR0 = GetdParam("fR0");
     cmd.screening = GetdParam("screening");
 //
 // DGP:
-    cmd.eps_DGP = GetdParam("eps_DGP");
-    cmd.rc_DGP = GetdParam("rc_DGP");
+    cmd.eps_DGP = GetdParam("epsDGP");
+    cmd.rc_DGP = GetdParam("rcDGP");
 //
 // Power spectrum table:
     cmd.fnamePS = GetParam("fnamePS");
     cmd.kmin = GetdParam("kmin");
     cmd.kmax = GetdParam("kmax");
     cmd.Nk = GetiParam("Nk");
+// Power spectrum table interpolation and extrapolation parameters:
+    cmd.kminT = GetdParam("kminT");
+    cmd.kmaxT = GetdParam("kmaxT");
+    cmd.Nkext = GetiParam("Nkext");
+    cmd.NkL = GetiParam("NkL");
+    cmd.NkU = GetiParam("NkU");
+    cmd.NPTL = GetiParam("NPTL");
+    cmd.NPTR = GetiParam("NPTR");
 //
+// CLPT correlation functions table:
+    cmd.rmin = GetdParam("rmin");
+    cmd.rmax = GetdParam("rmax");
+    cmd.Nr = GetiParam("Nr");
 // Background cosmology:
     cmd.om = GetdParam("Om");
     cmd.olstr = GetParam("OL");
@@ -119,7 +131,7 @@ local void ReadParametersCmdline(void)
     cmd.eps = GetdParam("eps");
     cmd.xstop = GetdParam("zout");
     cmd.maxnsteps = GetiParam("maxnsteps");
-	cmd.integration_method = GetParam("integration_method");
+	cmd.integration_method = GetParam("solverMethod");
 //
 // Quadrature parameters:
     cmd.quadratureMethod = GetParam("quadratureMethod");
@@ -203,16 +215,28 @@ local void startrun_Common(void)
     if (cmd.nquadSteps > nPSLT)
         error("CheckParameters: nquadSteps > nPSLT\n");
 
-
+/*
     if (!strnull(cmd.model_paramfile)
         && !(strcmp(cmd.mgmodel,"HS") == 0)
         && !(strcmp(cmd.mgmodel,"DGP") == 0)
+        && !(strcmp(cmd.mgmodel,"USERMODEL") == 0)
         && !(strcmp(cmd.mgmodel,"LCDM") == 0)
         ) {
         fprintf(stdout,"\n\nNot default model, using parameter file: %s\n",cmd.model_paramfile);
         ReadMGModelParameterFile(cmd.model_paramfile);
         PrintMGModelParameterFile(cmd.model_paramfile);
     }
+*/
+#define usrmodel_parameter_null    "usrmodel_parameters_null"
+
+    if ( (strcmp(cmd.mgmodel,"USER") == 0) || (strcmp(cmd.mgmodel,"user") == 0))
+        if (!strnull(cmd.model_paramfile)) {
+            fprintf(stdout,"\n\nUser model :: using parameter file: %s\n",cmd.model_paramfile);
+            ReadMGModelParameterFile(cmd.model_paramfile);
+            PrintMGModelParameterFile(cmd.model_paramfile);
+        } else
+            PrintMGModelParameterFile(usrmodel_parameter_null);
+#undef usrmodel_parameter_null
 }
 
 local void startrun_ParamStat(void)
@@ -228,23 +252,46 @@ local void startrun_ParamStat(void)
         cmd.kmax = GetdParam("kmax");
     if (GetParamStat("Nk") & ARGPARAM)
         cmd.Nk = GetiParam("Nk");
+// Power spectrum table interpolation and extrapolation parameters:
+    if (GetParamStat("kminT") & ARGPARAM)
+        cmd.kminT = GetdParam("kminT");
+    if (GetParamStat("kmaxT") & ARGPARAM)
+        cmd.kmaxT = GetdParam("kmaxT");
+    if (GetParamStat("Nkext") & ARGPARAM)
+        cmd.Nkext = GetiParam("Nkext");
+    if (GetParamStat("NkL") & ARGPARAM)
+        cmd.NkL = GetiParam("NkL");
+    if (GetParamStat("NkU") & ARGPARAM)
+        cmd.NkU = GetiParam("NkU");
+    if (GetParamStat("NPTL") & ARGPARAM)
+        cmd.NPTL = GetiParam("NPTL");
+    if (GetParamStat("NPTR") & ARGPARAM)
+        cmd.NPTR = GetiParam("NPTR");
+//
+// CLPT correlation functions table:
+    if (GetParamStat("rmin") & ARGPARAM)
+        cmd.rmin = GetdParam("rmin");
+    if (GetParamStat("rmax") & ARGPARAM)
+        cmd.rmax = GetdParam("rmax");
+    if (GetParamStat("Nr") & ARGPARAM)
+        cmd.Nr = GetiParam("Nr");
 
 // Modified gravity model parameters:
     if (GetParamStat("mgModel") & ARGPARAM)
         cmd.mgmodel = GetParam("mgModel");
     if (GetParamStat("suffixModel") & ARGPARAM)
         cmd.suffixModel = GetParam("suffixModel");
-    if (GetParamStat("nHS") & ARGPARAM)
-        cmd.nHS = GetiParam("nHS");
+//    if (GetParamStat("nHS") & ARGPARAM)
+//        cmd.nHS = GetiParam("nHS");
     if (GetParamStat("fR0") & ARGPARAM)
         cmd.fR0 = GetdParam("fR0");
     if (GetParamStat("screening") & ARGPARAM)
         cmd.rc_DGP = GetdParam("screening");
 // DGP:
-    if (GetParamStat("eps_DGP") & ARGPARAM)
-        cmd.eps_DGP = GetdParam("eps_DGP");
-    if (GetParamStat("rc_DGP") & ARGPARAM)
-        cmd.rc_DGP = GetdParam("rc_DGP");
+    if (GetParamStat("epsDGP") & ARGPARAM)
+        cmd.eps_DGP = GetdParam("epsDGP");
+    if (GetParamStat("rcDGP") & ARGPARAM)
+        cmd.rc_DGP = GetdParam("rcDGP");
 
 // Background cosmology:
     if (GetParamStat("Om") & ARGPARAM)
@@ -270,8 +317,8 @@ local void startrun_ParamStat(void)
 	if (GetParamStat("maxnsteps") & ARGPARAM) 
 		cmd.maxnsteps = GetiParam("maxnsteps");
 
-	if (GetParamStat("integration_method") & ARGPARAM) {
-		cmd.integration_method = GetParam("integration_method");
+	if (GetParamStat("solverMethod") & ARGPARAM) {
+		cmd.integration_method = GetParam("solverMethod");
 		fprintf(gd.outlog,"\n\nrunning instead %s integration method ...\n",
 				cmd.integration_method);
 	}
@@ -314,7 +361,33 @@ local void CheckParameters(void)
         error("CheckParameters: kmin can not be greater than kmax\n");
     if (cmd.Nk < 0)
         error("CheckParameters: absurd value for Nk\n");
+// Power spectrum table interpolation and extrapolation parameters:
+    if (cmd.kminT < 0.0)
+        error("CheckParameters: absurd value for kminT\n");
+    if (cmd.kmaxT < 0.0)
+        error("CheckParameters: absurd value for kmaxT\n");
+    if (cmd.kminT > cmd.kmaxT)
+        error("CheckParameters: kminT can not be greater than kmaxT\n");
+    if (cmd.Nkext < 0)
+        error("CheckParameters: absurd value for Nkext\n");
+    if (cmd.NkL < 0)
+        error("CheckParameters: absurd value for NkL\n");
+    if (cmd.NkU < 0)
+        error("CheckParameters: absurd value for NkU\n");
+    if (cmd.NPTL < 0)
+        error("CheckParameters: absurd value for NPTL\n");
+    if (cmd.NPTR < 0)
+        error("CheckParameters: absurd value for NPTR\n");
 //
+// CLPT correlation functions table:
+    if (cmd.rmin < 0.0)
+        error("CheckParameters: absurd value for rmin\n");
+    if (cmd.rmax < 0.0)
+        error("CheckParameters: absurd value for rmax\n");
+    if (cmd.rmin > cmd.rmax)
+        error("CheckParameters: rmin can not be greater than rmax\n");
+    if (cmd.Nr < 0)
+        error("CheckParameters: absurd value for Nr\n");
 // Background cosmology:
     if (cmd.om > 1.0 || cmd.om < 0.0)
         error("CheckParameters: absurd value for om\n");
@@ -340,6 +413,7 @@ local void CheckParameters(void)
         error("CheckParameters: absurd value for epsquad\n");
 }
 
+/*
 // I/O directories:
 local void setFilesDirs_log(void)
 {
@@ -370,6 +444,7 @@ local void setFilesDirs(void)
     sprintf(gd.fpfnameqfunctions,"CLPT/qfunctions%s.dat",cmd.suffixModel);
     sprintf(gd.fpfnameclptfunctions,"CorrelationFunction%s.dat",cmd.suffixModel);
 }
+*/
 
 local void ReadParameterFile(char *fname)
 {
@@ -395,18 +470,30 @@ local void ReadParameterFile(char *fname)
     RPName(cmd.kmin,"kmin");
     RPName(cmd.kmax,"kmax");
     IPName(cmd.Nk,"Nk");
+// Power spectrum table interpolation and extrapolation parameters:
+    RPName(cmd.kminT,"kminT");
+    RPName(cmd.kmaxT,"kmaxT");
+    IPName(cmd.Nkext,"Nkext");
+    IPName(cmd.NkL,"NkL");
+    IPName(cmd.NkU,"NkU");
+    IPName(cmd.NPTL,"NPTL");
+    IPName(cmd.NPTR,"NPTR");
 //
+// CLPT correlation functions table:
+    RPName(cmd.rmin,"rmin");
+    RPName(cmd.rmax,"rmax");
+    IPName(cmd.Nr,"Nr");
 // Modified gravity model parameters:
     SPName(cmd.mgmodel,"mgModel",100);
-    SPName(cmd.model_paramfile,"model_paramfile",100);
+    SPName(cmd.model_paramfile,"modelParamfile",100);
     SPName(cmd.suffixModel,"suffixModel",100);
-    IPName(cmd.nHS,"nHS");
+//    IPName(cmd.nHS,"nHS");
     RPName(cmd.fR0,"fR0");
     RPName(cmd.screening,"screening");
 //
 // DGP:
-    RPName(cmd.eps_DGP,"eps_DGP");
-    RPName(cmd.rc_DGP,"rc_DGP");
+    RPName(cmd.eps_DGP,"epsDGP");
+    RPName(cmd.rc_DGP,"rcDGP");
 //
 // Background cosmology:
     RPName(cmd.om,"Om");
@@ -420,7 +507,7 @@ local void ReadParameterFile(char *fname)
     RPName(cmd.eps,"eps");
 	RPName(cmd.xstop,"zout");
     IPName(cmd.maxnsteps,"maxnsteps");
-	SPName(cmd.integration_method,"integration_method",100);
+	SPName(cmd.integration_method,"solverMethod",100);
 //
 // Quadrature parameters:
     SPName(cmd.quadratureMethod,"quadratureMethod",100);
@@ -526,17 +613,29 @@ local void PrintParameterFile(char *fname)
         fprintf(fdout,FMTR,"kmin",cmd.kmin);
         fprintf(fdout,FMTR,"kmax",cmd.kmax);
         fprintf(fdout,FMTI,"Nk",cmd.Nk);
+// Power spectrum table interpolation and extrapolation parameters:
+        fprintf(fdout,FMTR,"kminT",cmd.kminT);
+        fprintf(fdout,FMTR,"kmaxT",cmd.kmaxT);
+        fprintf(fdout,FMTI,"Nkext",cmd.Nkext);
+        fprintf(fdout,FMTI,"NkL",cmd.NkL);
+        fprintf(fdout,FMTI,"NkU",cmd.NkU);
+        fprintf(fdout,FMTI,"NPTL",cmd.NPTL);
+        fprintf(fdout,FMTI,"NPTR",cmd.NPTR);
 //
+// CLPT correlation functions table:
+        fprintf(fdout,FMTR,"rmin",cmd.rmin);
+        fprintf(fdout,FMTR,"rmax",cmd.rmax);
+        fprintf(fdout,FMTI,"Nr",cmd.Nr);
 // Modified gravity model parameters:
         fprintf(fdout,FMTT,"mgModel",cmd.mgmodel);
-        fprintf(fdout,FMTT,"model_paramfile",cmd.model_paramfile);
+        fprintf(fdout,FMTT,"modelParamfile",cmd.model_paramfile);
         fprintf(fdout,FMTT,"suffixModel",cmd.suffixModel);
-        fprintf(fdout,FMTI,"nHS",cmd.nHS);
+//        fprintf(fdout,FMTI,"nHS",cmd.nHS);
         fprintf(fdout,FMTR,"fR0",cmd.fR0);
         fprintf(fdout,FMTR,"screening",cmd.screening);
 // DGP:
-        fprintf(fdout,FMTR,"eps_DGP",cmd.eps_DGP);
-        fprintf(fdout,FMTR,"rc_DGP",cmd.rc_DGP);
+        fprintf(fdout,FMTR,"epsDGP",cmd.eps_DGP);
+        fprintf(fdout,FMTR,"rcDGP",cmd.rc_DGP);
 //
 // Background cosmology:
         fprintf(fdout,FMTR,"Om",cmd.om);
@@ -550,7 +649,7 @@ local void PrintParameterFile(char *fname)
         fprintf(fdout,FMTT,"deta",cmd.dxstr);
         fprintf(fdout,FMTR,"zout",cmd.xstop);
         fprintf(fdout,FMTI,"maxnsteps",cmd.maxnsteps);
-        fprintf(fdout,FMTT,"integration_method",cmd.integration_method);
+        fprintf(fdout,FMTT,"solverMethod",cmd.integration_method);
 //
 // Quadrature parameters:
         fprintf(fdout,FMTT,"quadratureMethod",cmd.quadratureMethod);
@@ -570,6 +669,7 @@ local void PrintParameterFile(char *fname)
 #undef FMTR
 
 
+/*
 //=============================================================
 // Begin: Modified gravity model reading and writing parameters
 
@@ -702,9 +802,10 @@ local void PrintMGModelParameterFile(char *fname)
 
 // End: Modified gravity model reading and writing parameters
 //=============================================================
+*/
 
 
-#define NPT 50
+//#define NPT 50
 #define SPREAD 1.0
 local void InputPSTable(void)
 {
@@ -715,15 +816,17 @@ local void InputPSTable(void)
     int i;
     real dk, kval, PSval, kmin, kmax;
     int mwt;
-    double al,bl,chi2,q,siga,sigb,*x,*y,*sig;
+    double al,bl,chi2,q,siga,sigb;
+    double *xL,*yL,*sigL;
+    double *xR,*yR,*sigR;
     double au, bu;
     real *kPStmp;
     real *pPStmp;
     real *pPS2tmp;
     char namebuf[256];
     real kminext, kmaxext, dktmp, kmn, kmx;
-    int Nkext=600, NkL=50, NkU=50;
-    real kminT=1.0e-6, kmaxT=350.0;
+//    int Nkext=600, NkL=50, NkU=50;
+//    real kminT=1.0e-6, kmaxT=350.0;
 
 
     fprintf(gd.outlog,"\n\nReading power spectrum from file %s...\n",gd.fnamePS);
@@ -761,22 +864,25 @@ local void InputPSTable(void)
     fprintf(gd.outlog,"\n\nLinear fit (a + b x) to log-log power spectrum at minset and maxset...\n");
     fprintf(gd.outlog,"\n\nLinear fit to log-log power spectrum at minset and maxset...\n");
 
-    x=dvector(1,NPT);
-    y=dvector(1,NPT);
-    sig=dvector(1,NPT);
-    
+    xL=dvector(1,cmd.NPTL);
+    yL=dvector(1,cmd.NPTL);
+    sigL=dvector(1,cmd.NPTL);
+    xR=dvector(1,cmd.NPTR);
+    yR=dvector(1,cmd.NPTR);
+    sigR=dvector(1,cmd.NPTR);
+
 // Lower part of the PS
     fprintf(gd.outlog,"\nAt lower part of the spectrum...\n");
 
     plog = PSLCDMLogtab;
-    for (i=1;i<=NPT;i++) {
-        x[i]=kPos(plog);
-        y[i]=PS(plog);
-        sig[i]=SPREAD;
+    for (i=1;i<=cmd.NPTL;i++) {
+        xL[i]=kPos(plog);
+        yL[i]=PS(plog);
+        sigL[i]=SPREAD;
         plog++;
     }
     for (mwt=0;mwt<=1;mwt++) {
-        fit(x,y,NPT,sig,mwt,&al,&bl,&siga,&sigb,&chi2,&q);
+        fit(xL,yL,cmd.NPTL,sigL,mwt,&al,&bl,&siga,&sigb,&chi2,&q);
         if (mwt == 0)
             fprintf(gd.outlog,"\nIgnoring standard deviations\n");
         else
@@ -793,14 +899,14 @@ local void InputPSTable(void)
     fprintf(gd.outlog,"\nAt upper part of the spectrum...\n");
 
     plog = PSLCDMLogtab+nPSLogT-1;
-    for (i=1;i<=NPT;i++) {
-        x[i]=kPos(plog);
-        y[i]=PS(plog);
-        sig[i]=SPREAD;
+    for (i=1;i<=cmd.NPTR;i++) {
+        xR[i]=kPos(plog);
+        yR[i]=PS(plog);
+        sigR[i]=SPREAD;
         plog--;
     }
     for (mwt=0;mwt<=1;mwt++) {
-        fit(x,y,NPT,sig,mwt,&au,&bu,&siga,&sigb,&chi2,&q);
+        fit(xR,yR,cmd.NPTR,sigR,mwt,&au,&bu,&siga,&sigb,&chi2,&q);
         if (mwt == 0)
             fprintf(gd.outlog,"\nIgnoring standard deviations\n");
         else
@@ -832,15 +938,15 @@ local void InputPSTable(void)
     fprintf(gd.outlog,"\nkmin, kmax of the given power spectrum (with %d values): %g %g",
             kmin, kmax, nPSTabletmp);
     dktmp = (rlog10(kmax) - rlog10(kmin))/((real)(nPSTabletmp - 1));
-    kminext = rpow(10.0, rlog10(kmin)-((real)NkL)*dktmp);
-    kmaxext = rpow(10.0, rlog10(kmax)+((real)NkU)*dktmp);
+    kminext = rpow(10.0, rlog10(kmin)-((real)cmd.NkL)*dktmp);
+    kmaxext = rpow(10.0, rlog10(kmax)+((real)cmd.NkU)*dktmp);
 //
-    fprintf(gd.outlog,"\n\nNkL, NkU: %d %d",NkL, NkU);
-    NkL = rlog10(kmin/kminT)/dktmp;
-    NkU = rlog10(kmaxT/kmax)/dktmp;
-    fprintf(gd.outlog,"\nNkL, NkU targets: %d %d\n",NkL,NkU);
-    kminext = rpow(10.0, rlog10(kmin)-((real)NkL)*dktmp);
-    kmaxext = rpow(10.0, rlog10(kmax)+((real)NkU)*dktmp);
+    fprintf(gd.outlog,"\n\nNkL, NkU: %d %d",cmd.NkL, cmd.NkU);
+    cmd.NkL = rlog10(kmin/cmd.kminT)/dktmp;
+    cmd.NkU = rlog10(cmd.kmaxT/kmax)/dktmp;
+    fprintf(gd.outlog,"\nNkL, NkU targets: %d %d\n",cmd.NkL,cmd.NkU);
+    kminext = rpow(10.0, rlog10(kmin)-((real)cmd.NkL)*dktmp);
+    kmaxext = rpow(10.0, rlog10(kmax)+((real)cmd.NkU)*dktmp);
 //
     
     
@@ -852,7 +958,7 @@ local void InputPSTable(void)
     fprintf(gd.outlog,"\nkmin, kmax of the extended power spectrum (second try): %g %g\n",
             kmn, kmx);
 
-    nPSTable = Nkext;
+    nPSTable = cmd.Nkext;
     fprintf(gd.outlog,"\n\nCreating new PSTable with %d values\n",nPSTable);
     PSLCDMtab = (pointPSTableptr) allocate(nPSTable * sizeof(pointPSTable));
     dk = (rlog10(kmx) - rlog10(kmn))/((real)(nPSTable - 1));
@@ -869,7 +975,7 @@ local void InputPSTable(void)
                 if (rpow(10.0,kval) > kmax)
                     PSval = au + bu*kval;
                 else
-                    error("\n\nError: InputPSTable :: kmin, kmax, kval: %g %g %g", kmin, kmax, kval);
+                    error("\n\nError: InputPSTable :: kmin, kmax, kval: %g %g %g\n\n", kmin, kmax, rpow(10.0,kval));
 
         kPos(p) = rpow(10.0,kval);
         PS(p) = rpow(10.0,PSval);
@@ -897,11 +1003,14 @@ local void InputPSTable(void)
     free_dvector(pPStmp,1,nPSLogT);
     free_dvector(kPStmp,1,nPSLogT);
 
-    free_dvector(sig,1,NPT);
-    free_dvector(y,1,NPT);
-    free_dvector(x,1,NPT);
+    free_dvector(sigR,1,cmd.NPTR);
+    free_dvector(yR,1,cmd.NPTR);
+    free_dvector(xR,1,cmd.NPTR);
+    free_dvector(sigL,1,cmd.NPTL);
+    free_dvector(yL,1,cmd.NPTL);
+    free_dvector(xL,1,cmd.NPTL);
 }
-#undef NPT
+//#undef NPT
 #undef SPREAD
 
 
@@ -917,7 +1026,8 @@ local void PSLTable(void)
 
     xstoptmp = gd.xstop;
     gd.xstop = 0.;
-    Dp0 = DpFunction(0.);
+//    Dp0 = DpFunction(0.); // LCDM
+    Dp0 = DpFunction_LCDM(0.); // LCDM
     fprintf(gd.outlog,"\n\n Dp(0) = %g\n",Dp0);
     gd.xstop = xstoptmp;
     Dpzout = DpFunction(0.);
@@ -965,6 +1075,17 @@ local void PSLTable(void)
     }
 //
     spline(kPS,pPS,nPSLT,1.0e30,1.0e30,pPS2);
+
+    sprintf(namebuf,"%s/%s%s%s",gd.clptDir,"PSL",cmd.suffixModel,".dat");
+    outstr = stropen(namebuf,"w!");
+    for (i=1; i<=nPSLT; i++) {
+        fprintf(outstr,"%g %g\n",
+                kPS[i],pPS[i]);
+    }
+    fclose(outstr);
+
+//    fprintf(stdout,"\nPSLCDMTable: %d, %g, %g",nPSTable, kPos(PSLCDMtab), kPos(PSLCDMtab+nPSTable-1));
+//    fprintf(stdout,"\nPSLTable: %d, %g, %g",nPSLT, kPos(PSLT), kPos(PSLT+nPSLT-1));
 
 }
 

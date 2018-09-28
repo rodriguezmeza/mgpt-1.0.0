@@ -31,6 +31,10 @@ global int model_int_flag;
 
 global real KA_LCDM;
 global real KB_LCDM;
+global real KA_LCDM1;
+global real KB_LCDM1;
+global real KA_LCDM2;
+global real KB_LCDM2;
 
 global void set_model(void);
 
@@ -57,5 +61,9 @@ global real S3FL(real eta, real x, real k, real p, real Dpk, real Dpp, real D2f,
 global real S3dI(real eta, real x, real k, real p, real Dpk, real Dpp,
                  real D2f, real D2mf);
 // ==========================================
+
+// User model :: reading/printing parameters
+global void ReadMGModelParameterFile(char *);
+global void PrintMGModelParameterFile(char *);
 
 #endif // !_models_h

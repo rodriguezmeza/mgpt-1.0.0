@@ -27,7 +27,7 @@
 #include "protodefs.h"
 #include "models.h"
 
-#define EPSQ    0.0001
+#define EPSQ    0.000001
 
 local void computingQRs(void);
 local void loopQsRs(stream outstr, int imin, int imax, real dk);
@@ -46,9 +46,14 @@ void MainLoop(void)
 
 #define FMTQRDATHD    "%1s%4s%8s%8s%8s%8s%8s%8s%7s%8s%7s%7s%9s%7s%9s%7s%9s"
 
-#define FMTQRDAT	\
-"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
-%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e\n"
+//#define FMTQRDAT	\
+//"%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e \
+//%10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e %10.3e\n"
+
+#define FMTQRDAT    \
+"%e %e %e %e %e %e %e %e \
+%e %e %e %e %e %e %e %e %e %e\n"
+
 
 #define FMTQR       "%g %g %g %g %g %g %g %g %g %g %g %g %g %g %g %g\n"
 
@@ -62,13 +67,15 @@ local void computingQRs(void)
     real kk, rr, xv, k2;
     global_D2v2_ptr ptmp;
 
-    bTime = cputime();
+//    bTime = cputime();
+    bTime = second();
 
 // FOR LCDM:
     if (model_int_flag==LCDM) {
         gd.p = cmd.kmin;
         kk = gd.p;
-        ki = cmd.kmin;
+//        ki = cmd.kmin;
+        ki = 1.e-6;
         rr = kk/ki;
         xv = xGL(pGL)[1];
         k2 = ki * rsqrt(1.0 + rsqr(rr) - 2.0*rr*xv);
@@ -76,18 +83,24 @@ local void computingQRs(void)
         KA_LCDM = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
         KB_LCDM = KA_LCDM;
         fprintf(stdout,"\n\nKA_LCDM, KB_LCDM: %g %g\n",KA_LCDM, KB_LCDM);
+
+        ptmp = DsSecondOrder_func(k2, ki, ki*rr);
+        KA_LCDM1 = DA2D2(ptmp)/( (3.0/7.0)*Dpk1D2v2(ptmp)*Dpk2D2v2(ptmp) );
+        KB_LCDM1 = KA_LCDM1;
+        fprintf(stdout,"KA_LCDM1, KB_LCDM1: %g %g\n",KA_LCDM1, KB_LCDM1);
+
     }
 //
 
     outstrQsRs = stropen(gd.fpfnamekfun,"w!");
-    fprintf(outstrQsRs,"%1s%5s%12s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%12s%12s%12s",
+    fprintf(outstrQsRs,"%1s%5s%12s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%13s",
             "#","k","<Q1>","<Q2>","<Q3>",
             "<Q5>","<Q7>","<Q8>","<Q9>",
             "<Q11>","<Q12>","<Q13>","<QI>",
             "<R1>","<R2>","<R1p2>","<RI>","<Dpk>","<PSLMG>\n");
 
     fprintf(outstrQsRs,
-            "%1s%6s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%12s%12s%12s",
+            "%1s%6s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%11s%12s",
             "#","<1>","<2>","<3>","<4>","<5>","<6>","<7>","<8>","<9>",
             "<10>","<11>","<12>","<13>","<14>","<15>","<16>","<17>","<18>\n");
 
@@ -127,7 +140,8 @@ local void computingQRs(void)
 //
     fclose(outstrQsRs);
 
-    fprintf(stdout,"\nTotal time to compute all k functions: %g",cputime()-bTime);
+//    fprintf(stdout,"\nTotal time to compute all k functions: %f",(cputime()-bTime)*60.0);
+    fprintf(stdout,"\nTotal time to compute all k functions: %f",(second()-bTime));
 }
 
 
@@ -146,10 +160,12 @@ local void loopQsRs(stream outstr, int imin, int imax, real dk)
 
     if (model_int_flag==LCDM) {
     for (i=imin; i<=imax; i++) {
-        aTime = cputime();
+//        aTime = cputime();
+        aTime = second();
         kval = rlog10(cmd.kmin) + dk*((real)(i - 1));
         ki = rpow(10.0,kval);
-        fprintf(stdout,"i: %d :: ki: %g :: ",i,ki);
+//        fprintf(stdout,"i: %d :: ki: %g :: ",i,ki);
+        fprintf(stdout,"i: %d :: ki: %e :: ",i,ki);
         fflush(stdout);
         qrs = QsRs_functions_driver_LCDM(gd.xstop, ki);
 //        qrs = QsRs_functions_driver(gd.xstop, ki);
@@ -173,14 +189,18 @@ local void loopQsRs(stream outstr, int imin, int imax, real dk)
         
         Dpk = DpFunction(ki);
         PSLMG = psInterpolation_nr(ki, kPS, pPS, nPSLT);
-        
+/*
         fprintf(stdout,FMTQR,
                 Q1, Q2, Q3,
                 Q5, Q7, Q8, Q9,
                 Q11, Q12, Q13, QI,
                 R1, R2, R1p2, RI,
                 cputime()-aTime);
-        
+*/
+        fprintf(stdout,"time = %f\n",
+                (second()-aTime));
+//                (cputime()-aTime)*60.0);
+
         fprintf(outstr,FMTQRDAT,
                 ki, Q1, Q2, Q3,
                 Q5, Q7, Q8, Q9,
@@ -194,10 +214,11 @@ local void loopQsRs(stream outstr, int imin, int imax, real dk)
     }
     } else {
     for (i=imin; i<=imax; i++) {
-        aTime = cputime();
+//        aTime = cputime();
+        aTime = second();
         kval = rlog10(cmd.kmin) + dk*((real)(i - 1));
         ki = rpow(10.0,kval);
-        fprintf(stdout,"i: %d :: ki: %g :: ",i,ki);
+        fprintf(stdout,"i: %d :: ki: %e :: ",i,ki);
         fflush(stdout);
         qrs = QsRs_functions_driver(gd.xstop, ki);
         
@@ -219,14 +240,18 @@ local void loopQsRs(stream outstr, int imin, int imax, real dk)
         
         Dpk = DpFunction(ki);
         PSLMG = psInterpolation_nr(ki, kPS, pPS, nPSLT);
-        
+/*
         fprintf(stdout,FMTQR,
                 Q1, Q2, Q3,
                 Q5, Q7, Q8, Q9,
                 Q11, Q12, Q13, QI,
                 R1, R2, R1p2, RI,
                 cputime()-aTime);
-        
+*/
+        fprintf(stdout,"time = %f\n",
+                (second()-aTime));
+//        (cputime()-aTime)*60.0);
+
         fprintf(outstr,FMTQRDAT,
                 ki, Q1, Q2, Q3,
                 Q5, Q7, Q8, Q9,

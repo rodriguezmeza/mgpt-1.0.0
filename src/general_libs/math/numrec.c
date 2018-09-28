@@ -623,6 +623,17 @@ int *nr_ivector(long nl, long nh)
 	return v-nl+NR_END;
 }
 
+int *ivector(long nl, long nh)
+/* allocate an int vector with subscript range v[nl..nh] */
+{
+    int *v;
+    
+    v=(int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
+    if (!v) nrerror("allocation failure in ivector()");
+    return v-nl+NR_END;
+}
+
+
 unsigned char *nr_cvector(long nl, long nh)
 {
 	unsigned char *v;

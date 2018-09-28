@@ -51,8 +51,10 @@ void rk4(double y[], double dydx[], int n, double x, double h, double yout[],
 void odeint(double ystart[], int nvar, double x1, double x2, double eps, double h1,
             double hmin, int *nok, int *nbad, int maxnsteps,
             void (*derivsin)(double, double [], double []),
+            void (*jacobnin)(double, double [], double [], double **, int),
             void (*rkqsin)(double [], double [], int, double *, double, double, double [],
-                         double *, double *, void (*)(double, double [], double [])))
+                         double *, double *, void (*)(double, double [], double []),
+                           void (*)(double, double [], double [], double **, int)))
 {
     int nstp,i;
     double xsav,x,hnext,hdid,h;
@@ -79,7 +81,7 @@ void odeint(double ystart[], int nvar, double x1, double x2, double eps, double 
         }
         if ((x+h-x2)*(x+h-x1) > 0.0) h=x2-x;
 //        (*rkqsin)(y,dydx,nvar,&x,h,eps,yscal,&hdid,&hnext,derivsSecondOrder);
-        (*rkqsin)(y,dydx,nvar,&x,h,eps,yscal,&hdid,&hnext,derivsin);
+        (*rkqsin)(y,dydx,nvar,&x,h,eps,yscal,&hdid,&hnext,derivsin,jacobnin);
         if (hdid == h) ++(*nok); else ++(*nbad);
         if ((x-x2)*(x2-x1) >= 0.0) {
             for (i=1;i<=nvar;i++) ystart[i]=y[i];
@@ -99,7 +101,7 @@ void odeint(double ystart[], int nvar, double x1, double x2, double eps, double 
 }
 #undef MAXSTP
 #undef TINY
-#undef NRANSI
+//#undef NRANSI
 
 // rkqs
 //
@@ -113,7 +115,8 @@ void odeint(double ystart[], int nvar, double x1, double x2, double eps, double 
 
 void rkqs(double y[], double dydx[], int n, double *x, double htry, double eps,
           double yscal[], double *hdid, double *hnext,
-          void (*derivs)(double, double [], double []))
+          void (*derivs)(double, double [], double []),
+          void (*jacobnin)(double, double [], double [], double **, int))
 {
     void rkck(double y[], double dydx[], int n, double x, double h,
               double yout[], double yerr[], void (*derivs)(double, double [], double []));
@@ -145,7 +148,7 @@ void rkqs(double y[], double dydx[], int n, double *x, double htry, double eps,
 #undef PGROW
 #undef PSHRNK
 #undef ERRCON
-#undef NRANSI
+//#undef NRANSI
 
 
 // rkck
@@ -220,7 +223,8 @@ double **d,*x;
 
 void bsstep(double y[], double dydx[], int nv, double *xx, double htry, double eps,
             double yscal[], double *hdid, double *hnext,
-            void (*derivs)(double, double [], double []))
+            void (*derivs)(double, double [], double []),
+            void (*jacobnin)(double, double [], double [], double **, int))
 {
     void mmid(double y[], double dydx[], int nvar, double xs, double htot,
               int nstep, double yout[], void (*derivs)(double, double[], double[]));
@@ -343,7 +347,7 @@ void bsstep(double y[], double dydx[], int nv, double *xx, double htry, double e
 #undef REDMIN
 #undef TINY
 #undef SCALMX
-#undef NRANSI
+//#undef NRANSI
 
 
 // mmid
@@ -381,7 +385,7 @@ void mmid(double y[], double dydx[], int nvar, double xs, double htot, int nstep
     free_dvector(yn,1,nvar);
     free_dvector(ym,1,nvar);
 }
-#undef NRANSI
+//#undef NRANSI
 
 // pzextr
 //
@@ -419,5 +423,475 @@ void pzextr(int iest, double xest, double yest[], double yz[], double dy[], int 
     }
     free_dvector(c,1,nv);
 }
+//#undef NRANSI
+
+
+//#define NRANSI
+//#include "nrutil.h"
+
+void simpr(double y[], double dydx[], double dfdx[], double **dfdy, int n,
+           double xs, double htot, int nstep, double yout[],
+           void (*derivs)(double, double [], double []))
+{
+    void lubksb(double **a, int n, int *indx, double b[]);
+    void ludcmp(double **a, int n, int *indx, double *d);
+    int i,j,nn,*indx;
+    double d,h,x,**a,*del,*ytemp;
+    
+    indx=ivector(1,n);
+    a=dmatrix(1,n,1,n);
+    del=dvector(1,n);
+    ytemp=dvector(1,n);
+    h=htot/nstep;
+    for (i=1;i<=n;i++) {
+        for (j=1;j<=n;j++) a[i][j] = -h*dfdy[i][j];
+        ++a[i][i];
+    }
+    ludcmp(a,n,indx,&d);
+    for (i=1;i<=n;i++)
+        yout[i]=h*(dydx[i]+h*dfdx[i]);
+    lubksb(a,n,indx,yout);
+    for (i=1;i<=n;i++)
+        ytemp[i]=y[i]+(del[i]=yout[i]);
+    x=xs+h;
+    (*derivs)(x,ytemp,yout);
+    for (nn=2;nn<=nstep;nn++) {
+        for (i=1;i<=n;i++)
+            yout[i]=h*yout[i]-del[i];
+        lubksb(a,n,indx,yout);
+        for (i=1;i<=n;i++)
+            ytemp[i] += (del[i] += 2.0*yout[i]);
+        x += h;
+        (*derivs)(x,ytemp,yout);
+    }
+    for (i=1;i<=n;i++)
+        yout[i]=h*yout[i]-del[i];
+    lubksb(a,n,indx,yout);
+    for (i=1;i<=n;i++)
+        yout[i] += ytemp[i];
+    free_dvector(ytemp,1,n);
+    free_dvector(del,1,n);
+    free_dmatrix(a,1,n,1,n);
+    free_ivector(indx,1,n);
+}
+//#undef NRANSI
+
+/*
+void jacobn(double x, double y[], double dfdx[], double **dfdy, int n)
+{
+    int i;
+    
+    for (i=1;i<=n;i++) dfdx[i]=0.0;
+    dfdy[1][1] = -0.013-1000.0*y[3];
+    dfdy[1][2]=0.0;
+    dfdy[1][3] = -1000.0*y[1];
+    dfdy[2][1]=0.0;
+    dfdy[2][2] = -2500.0*y[3];
+    dfdy[2][3] = -2500.0*y[2];
+    dfdy[3][1] = -0.013-1000.0*y[3];
+    dfdy[3][2] = -2500.0*y[3];
+    dfdy[3][3] = -1000.0*y[1]-2500.0*y[2];
+}
+*/
+
+/*
+void derivs(double x, double y[], double dydx[])
+{
+    dydx[1] = -0.013*y[1]-1000.0*y[1]*y[3];
+    dydx[2] = -2500.0*y[2]*y[3];
+    dydx[3] = -0.013*y[1]-1000.0*y[1]*y[3]-2500.0*y[2]*y[3];
+}
+*/
+
+
+void lubksb(double **a, int n, int *indx, double b[])
+{
+    int i,ii=0,ip,j;
+    double sum;
+    
+    for (i=1;i<=n;i++) {
+        ip=indx[i];
+        sum=b[ip];
+        b[ip]=b[i];
+        if (ii)
+            for (j=ii;j<=i-1;j++) sum -= a[i][j]*b[j];
+        else if (sum) ii=i;
+        b[i]=sum;
+    }
+    for (i=n;i>=1;i--) {
+        sum=b[i];
+        for (j=i+1;j<=n;j++) sum -= a[i][j]*b[j];
+        b[i]=sum/a[i][i];
+    }
+}
+
+
+
+//#include <math.h>
+//#define NRANSI
+//#include "nrutil.h"
+#define TINY 1.0e-20
+
+void ludcmp(double **a, int n, int *indx, double *d)
+{
+    int i,imax,j,k;
+    double big,dum,sum,temp;
+    double *vv;
+    
+    vv=dvector(1,n);
+    *d=1.0;
+    for (i=1;i<=n;i++) {
+        big=0.0;
+        for (j=1;j<=n;j++)
+            if ((temp=fabs(a[i][j])) > big) big=temp;
+        if (big == 0.0) nrerror("Singular matrix in routine ludcmp");
+        vv[i]=1.0/big;
+    }
+    for (j=1;j<=n;j++) {
+        for (i=1;i<j;i++) {
+            sum=a[i][j];
+            for (k=1;k<i;k++) sum -= a[i][k]*a[k][j];
+            a[i][j]=sum;
+        }
+        big=0.0;
+        for (i=j;i<=n;i++) {
+            sum=a[i][j];
+            for (k=1;k<j;k++)
+                sum -= a[i][k]*a[k][j];
+            a[i][j]=sum;
+            if ( (dum=vv[i]*fabs(sum)) >= big) {
+                big=dum;
+                imax=i;
+            }
+        }
+        if (j != imax) {
+            for (k=1;k<=n;k++) {
+                dum=a[imax][k];
+                a[imax][k]=a[j][k];
+                a[j][k]=dum;
+            }
+            *d = -(*d);
+            vv[imax]=vv[j];
+        }
+        indx[j]=imax;
+        if (a[j][j] == 0.0) a[j][j]=TINY;
+        if (j != n) {
+            dum=1.0/(a[j][j]);
+            for (i=j+1;i<=n;i++) a[i][j] *= dum;
+        }
+    }
+    free_dvector(vv,1,n);
+}
+#undef TINY
+//#undef NRANSI
+
+
+//#include <math.h>
+//#define NRANSI
+//#include "nrutil.h"
+#define KMAXX 7
+#define IMAXX (KMAXX+1)
+#define SAFE1 0.25
+#define SAFE2 0.7
+#define REDMAX 1.0e-5
+#define REDMIN 0.7
+#define TINY 1.0e-30
+#define SCALMX 0.1
+
+double **d,*x;
+
+void stifbs(double y[], double dydx[], int nv, double *xx, double htry, double eps,
+            double yscal[], double *hdid, double *hnext,
+            void (*derivs)(double, double [], double []),
+            void (*jacobn)(double, double [], double [], double **, int))
+{
+//    void jacobn(double x, double y[], double dfdx[], double **dfdy, int n);
+    void simpr(double y[], double dydx[], double dfdx[], double **dfdy,
+               int n, double xs, double htot, int nstep, double yout[],
+               void (*derivs)(double, double [], double []));
+    void pzextr(int iest, double xest, double yest[], double yz[], double dy[],
+                int nv);
+    int i,iq,k,kk,km;
+    static int first=1,kmax,kopt,nvold = -1;
+    static double epsold = -1.0,xnew;
+    double eps1,errmax,fact,h,red,scale,work,wrkmin,xest;
+    double *dfdx,**dfdy,*err,*yerr,*ysav,*yseq;
+    static double a[IMAXX+1];
+    static double alf[KMAXX+1][KMAXX+1];
+    static int nseq[IMAXX+1]={0,2,6,10,14,22,34,50,70};
+    int reduct,exitflag=0;
+    
+    d=dmatrix(1,nv,1,KMAXX);
+    dfdx=dvector(1,nv);
+    dfdy=dmatrix(1,nv,1,nv);
+    err=dvector(1,KMAXX);
+    x=dvector(1,KMAXX);
+    yerr=dvector(1,nv);
+    ysav=dvector(1,nv);
+    yseq=dvector(1,nv);
+    if(eps != epsold || nv != nvold) {
+        *hnext = xnew = -1.0e29;
+        eps1=SAFE1*eps;
+        a[1]=nseq[1]+1;
+        for (k=1;k<=KMAXX;k++) a[k+1]=a[k]+nseq[k+1];
+        for (iq=2;iq<=KMAXX;iq++) {
+            for (k=1;k<iq;k++)
+                alf[k][iq]=pow(eps1,((a[k+1]-a[iq+1])/
+                                     ((a[iq+1]-a[1]+1.0)*(2*k+1))));
+        }
+        epsold=eps;
+        nvold=nv;
+        a[1] += nv;
+        for (k=1;k<=KMAXX;k++) a[k+1]=a[k]+nseq[k+1];
+        for (kopt=2;kopt<KMAXX;kopt++)
+            if (a[kopt+1] > a[kopt]*alf[kopt-1][kopt]) break;
+        kmax=kopt;
+    }
+    h=htry;
+    for (i=1;i<=nv;i++) ysav[i]=y[i];
+    jacobn(*xx,y,dfdx,dfdy,nv);
+    if (*xx != xnew || h != (*hnext)) {
+        first=1;
+        kopt=kmax;
+    }
+    reduct=0;
+    for (;;) {
+        for (k=1;k<=kmax;k++) {
+            xnew=(*xx)+h;
+            if (xnew == (*xx)) nrerror("step size underflow in stifbs");
+            simpr(ysav,dydx,dfdx,dfdy,nv,*xx,h,nseq[k],yseq,derivs);
+            xest=SQR(h/nseq[k]);
+            pzextr(k,xest,yseq,y,yerr,nv);
+            if (k != 1) {
+                errmax=TINY;
+                for (i=1;i<=nv;i++) errmax=FMAX(errmax,fabs(yerr[i]/yscal[i]));
+                errmax /= eps;
+                km=k-1;
+                err[km]=pow(errmax/SAFE1,1.0/(2*km+1));
+            }
+            if (k != 1 && (k >= kopt-1 || first)) {
+                if (errmax < 1.0) {
+                    exitflag=1;
+                    break;
+                }
+                if (k == kmax || k == kopt+1) {
+                    red=SAFE2/err[km];
+                    break;
+                }
+                else if (k == kopt && alf[kopt-1][kopt] < err[km]) {
+                    red=1.0/err[km];
+                    break;
+                }
+                else if (kopt == kmax && alf[km][kmax-1] < err[km]) {
+                    red=alf[km][kmax-1]*SAFE2/err[km];
+                    break;
+                }
+                else if (alf[km][kopt] < err[km]) {
+                    red=alf[km][kopt-1]/err[km];
+                    break;
+                }
+            }
+        }
+        if (exitflag) break;
+        red=FMIN(red,REDMIN);
+        red=FMAX(red,REDMAX);
+        h *= red;
+        reduct=1;
+    }
+    *xx=xnew;
+    *hdid=h;
+    first=0;
+    wrkmin=1.0e35;
+    for (kk=1;kk<=km;kk++) {
+        fact=FMAX(err[kk],SCALMX);
+        work=fact*a[kk+1];
+        if (work < wrkmin) {
+            scale=fact;
+            wrkmin=work;
+            kopt=kk+1;
+        }
+    }
+    *hnext=h/scale;
+    if (kopt >= k && kopt != kmax && !reduct) {
+        fact=FMAX(scale/alf[kopt-1][kopt],SCALMX);
+        if (a[kopt+1]*fact <= wrkmin) {
+            *hnext=h/fact;
+            kopt++;
+        }
+    }
+    free_dvector(yseq,1,nv);
+    free_dvector(ysav,1,nv);
+    free_dvector(yerr,1,nv);
+    free_dvector(x,1,KMAXX);
+    free_dvector(err,1,KMAXX);
+    free_dmatrix(dfdy,1,nv,1,nv);
+    free_dvector(dfdx,1,nv);
+    free_dmatrix(d,1,nv,1,KMAXX);
+}
+#undef KMAXX
+#undef IMAXX
+#undef SAFE1
+#undef SAFE2
+#undef REDMAX
+#undef REDMIN
+#undef TINY
+#undef SCALMX
+//#undef NRANSI
+
+
+
+//#include <math.h>
+//#define NRANSI
+//#include "nrutil.h"
+#define SAFETY 0.9
+#define GROW 1.5
+#define PGROW -0.25
+#define SHRNK 0.5
+#define PSHRNK (-1.0/3.0)
+#define ERRCON 0.1296
+#define MAXTRY 40
+#define GAM (1.0/2.0)
+#define A21 2.0
+#define A31 (48.0/25.0)
+#define A32 (6.0/25.0)
+#define C21 -8.0
+#define C31 (372.0/25.0)
+#define C32 (12.0/5.0)
+#define C41 (-112.0/125.0)
+#define C42 (-54.0/125.0)
+#define C43 (-2.0/5.0)
+#define B1 (19.0/9.0)
+#define B2 (1.0/2.0)
+#define B3 (25.0/108.0)
+#define B4 (125.0/108.0)
+#define E1 (17.0/54.0)
+#define E2 (7.0/36.0)
+#define E3 0.0
+#define E4 (125.0/108.0)
+#define C1X (1.0/2.0)
+#define C2X (-3.0/2.0)
+#define C3X (121.0/50.0)
+#define C4X (29.0/250.0)
+#define A2X 1.0
+#define A3X (3.0/5.0)
+
+void stiff(double y[], double dydx[], int n, double *x, double htry, double eps,
+           double yscal[], double *hdid, double *hnext,
+           void (*derivs)(double, double [], double []),
+           void (*jacobn)(double, double [], double [], double **, int))
+{
+//    void jacobn(double x, double y[], double dfdx[], double **dfdy, int n);
+    void lubksb(double **a, int n, int *indx, double b[]);
+    void ludcmp(double **a, int n, int *indx, double *d);
+    int i,j,jtry,*indx;
+    double d,errmax,h,xsav,**a,*dfdx,**dfdy,*dysav,*err;
+    double *g1,*g2,*g3,*g4,*ysav;
+    
+    indx=ivector(1,n);
+    a=dmatrix(1,n,1,n);
+    dfdx=dvector(1,n);
+    dfdy=dmatrix(1,n,1,n);
+    dysav=dvector(1,n);
+    err=dvector(1,n);
+    g1=dvector(1,n);
+    g2=dvector(1,n);
+    g3=dvector(1,n);
+    g4=dvector(1,n);
+    ysav=dvector(1,n);
+    xsav=(*x);
+    for (i=1;i<=n;i++) {
+        ysav[i]=y[i];
+        dysav[i]=dydx[i];
+    }
+    jacobn(xsav,ysav,dfdx,dfdy,n);
+    h=htry;
+    for (jtry=1;jtry<=MAXTRY;jtry++) {
+        for (i=1;i<=n;i++) {
+            for (j=1;j<=n;j++) a[i][j] = -dfdy[i][j];
+            a[i][i] += 1.0/(GAM*h);
+        }
+        ludcmp(a,n,indx,&d);
+        for (i=1;i<=n;i++)
+            g1[i]=dysav[i]+h*C1X*dfdx[i];
+        lubksb(a,n,indx,g1);
+        for (i=1;i<=n;i++)
+            y[i]=ysav[i]+A21*g1[i];
+        *x=xsav+A2X*h;
+        (*derivs)(*x,y,dydx);
+        for (i=1;i<=n;i++)
+            g2[i]=dydx[i]+h*C2X*dfdx[i]+C21*g1[i]/h;
+        lubksb(a,n,indx,g2);
+        for (i=1;i<=n;i++)
+            y[i]=ysav[i]+A31*g1[i]+A32*g2[i];
+        *x=xsav+A3X*h;
+        (*derivs)(*x,y,dydx);
+        for (i=1;i<=n;i++)
+            g3[i]=dydx[i]+h*C3X*dfdx[i]+(C31*g1[i]+C32*g2[i])/h;
+        lubksb(a,n,indx,g3);
+        for (i=1;i<=n;i++)
+            g4[i]=dydx[i]+h*C4X*dfdx[i]+(C41*g1[i]+C42*g2[i]+C43*g3[i])/h;
+        lubksb(a,n,indx,g4);
+        for (i=1;i<=n;i++) {
+            y[i]=ysav[i]+B1*g1[i]+B2*g2[i]+B3*g3[i]+B4*g4[i];
+            err[i]=E1*g1[i]+E2*g2[i]+E3*g3[i]+E4*g4[i];
+        }
+        *x=xsav+h;
+        if (*x == xsav) nrerror("stepsize not significant in stiff");
+        errmax=0.0;
+        for (i=1;i<=n;i++) errmax=FMAX(errmax,fabs(err[i]/yscal[i]));
+        errmax /= eps;
+        if (errmax <= 1.0) {
+            *hdid=h;
+            *hnext=(errmax > ERRCON ? SAFETY*h*pow(errmax,PGROW) : GROW*h);
+            free_dvector(ysav,1,n);
+            free_dvector(g4,1,n);
+            free_dvector(g3,1,n);
+            free_dvector(g2,1,n);
+            free_dvector(g1,1,n);
+            free_dvector(err,1,n);
+            free_dvector(dysav,1,n);
+            free_dmatrix(dfdy,1,n,1,n);
+            free_dvector(dfdx,1,n);
+            free_dmatrix(a,1,n,1,n);
+            free_ivector(indx,1,n);
+            return;
+        } else {
+            *hnext=SAFETY*h*pow(errmax,PSHRNK);
+            h=(h >= 0.0 ? FMAX(*hnext,SHRNK*h) : FMIN(*hnext,SHRNK*h));
+        }
+    }
+    nrerror("exceeded MAXTRY in stiff");
+}
+#undef SAFETY
+#undef GROW
+#undef PGROW
+#undef SHRNK
+#undef PSHRNK
+#undef ERRCON
+#undef MAXTRY
+#undef GAM
+#undef A21
+#undef A31
+#undef A32
+#undef C21
+#undef C31
+#undef C32
+#undef C41
+#undef C42
+#undef C43
+#undef B1
+#undef B2
+#undef B3
+#undef B4
+#undef E1
+#undef E2
+#undef E3
+#undef E4
+#undef C1X
+#undef C2X
+#undef C3X
+#undef C4X
+#undef A2X
+#undef A3X
 //#undef NRANSI
 

@@ -67,6 +67,7 @@ void psdes(unsigned long *lword, unsigned long *irword);
 
 float *nr_vector(long nl, long nh);
 int *nr_ivector(long nl, long nh);
+int *ivector(long nl, long nh);
 unsigned char *nr_cvector(long nl, long nh);
 unsigned long *nr_lvector(long nl, long nh);
 /* real *nr_dvector(long nl, long nh); */
@@ -78,6 +79,7 @@ double **dmatrix(long nrl, long nrh, long ncl, long nch);
 int **nr_imatrix(long nrl, long nrh, long ncl, long nch);
 void free_vector(float *v, long nl, long nh);
 void free_ivector(int *v, long nl, long nh);
+//void free_ivector(int *v, long nl, long nh);
 void free_cvector(unsigned char *v, long nl, long nh);
 void free_lvector(unsigned long *v, long nl, long nh);
 void free_dvector(double *v, long nl, long nh);

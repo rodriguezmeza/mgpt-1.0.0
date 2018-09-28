@@ -58,7 +58,6 @@
 #include "strings.h"
 #endif
 
-
 //#include "data_struc_defs.h"
 // CONTENTS OF data_struc_defs.h
 #if !defined(global)                    // global def question must be here
@@ -87,19 +86,18 @@ addr[nt]=param;                                                    \
 id[nt++]=STRING;}
 // END OF CONTENTS OF...
 
-
-
-#include "models.h"
-
-
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "models.h"
+
 #define invH0     2997.92458
 #define PI2     9.8696044010893586188
 #define TWOPI2     19.739208802178716
-#define FOURPI2   39.4784176043574
+//#define FOURPI2   39.4784176043574
+#define FOURPI2   39.4784
+//#define FOURPI2   39.47841760435743
 #define SIXPI2  59.21762640653615
 #define INVSQRTDTWOPI 0.39894228040143267794
 
@@ -109,7 +107,19 @@ typedef struct {
     real kmin;
     real kmax;
     int Nk;
+// Power spectrum table interpolation and extrapolation parameters:
+    real kminT;
+    real kmaxT;
+    int Nkext;
+    int NkL;
+    int NkU;
+    int NPTL;
+    int NPTR;
 //
+// CLPT correlation functions table:
+    real rmin;
+    real rmax;
+    int Nr;
 // Post processing parameters:
     bool postprocessing;
     string options;

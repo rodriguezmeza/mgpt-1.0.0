@@ -61,7 +61,8 @@ double qgauss(double (*func)(double), double a, double b,
 #define K 5
 
 double qromo(double (*func)(double), double a, double b,
-             double (*choose)(double(*)(double), double, double, int), double epsq)
+             double (*choose)(double(*)(double), double, double, int),
+             double epsq, int KK)
 //double (*choose)(double(*)(double), double, double, int)) // Original
 {
     void polint(double xa[], double ya[], int n, double x, double *y, double *dy);
@@ -72,8 +73,8 @@ double qromo(double (*func)(double), double a, double b,
     h[1]=1.0;
     for (j=1;j<=JMAX;j++) {
         s[j]=(*choose)(func,a,b,j);
-        if (j >= K) {
-            polint(&h[j-K],&s[j-K],K,0.0,&ss,&dss);
+        if (j >= KK) {
+            polint(&h[j-KK],&s[j-KK],KK,0.0,&ss,&dss);
 //            if (fabs(dss) <= EPS*fabs(ss)) return ss; // Original
             if (fabs(dss) <= epsq*fabs(ss)) return ss;
         }
@@ -393,3 +394,62 @@ void splint(double xa[], double ya[], double y2a[], int n, double x, double *y)
 //#undef NRANSI
 // FIN DE QROMO
 
+//#include <math.h>
+#define EPS 1.0e-6
+#define JMAX 20
+#define JMAXP (JMAX+1)
+#define K 5
+// K=2 is the Simpsons's rule
+
+// choose is dummy
+double qromb(double (*func)(double), double a, double b,
+             double (*choose)(double(*)(double), double, double, int),
+             double epsq, int KK)
+//double qromb(double (*func)(double), double a, double b)
+{
+    void polint(double xa[], double ya[], int n, double x, double *y, double *dy);
+    double trapzd(double (*func)(double), double a, double b, int n);
+    void nrerror(char error_text[]);
+    double ss,dss;
+    double s[JMAXP],h[JMAXP+1];
+    int j;
+    
+    h[1]=1.0;
+    for (j=1;j<=JMAX;j++) {
+        s[j]=trapzd(func,a,b,j);
+        if (j >= KK) {
+            polint(&h[j-KK],&s[j-KK],KK,0.0,&ss,&dss);
+            if (fabs(dss) <= epsq*fabs(ss)) return ss; // pasar a rabs
+//            if (fabs(dss) <= EPS*fabs(ss)) return ss;
+        }
+        h[j+1]=0.25*h[j];
+    }
+    nrerror("Too many steps in routine qromb");
+    return 0.0;
+}
+#undef EPS
+#undef JMAX
+#undef JMAXP
+#undef K
+
+#define FUNC(x) ((*func)(x))
+
+double trapzd(double (*func)(double), double a, double b, int n)
+{
+    double x,tnm,sum,del;
+    static double s;
+    int it,j;
+    
+    if (n == 1) {
+        return (s=0.5*(b-a)*(FUNC(a)+FUNC(b)));
+    } else {
+        for (it=1,j=1;j<n-1;j++) it <<= 1;
+        tnm=it;
+        del=(b-a)/tnm;
+        x=a+0.5*del;
+        for (sum=0.0,j=1;j<=it;j++,x+=del) sum += FUNC(x);
+        s=0.5*(s+(b-a)*sum/tnm);
+        return s;
+    }
+}
+#undef FUNC

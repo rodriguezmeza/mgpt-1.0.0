@@ -2,7 +2,7 @@ bin_PROGRAMS = mgpt
 
 mgpt_SOURCES = main.c cmdline_defs.h globaldefs.h \
 mgpt_diffeqs.c mgpt_io.c mgpt_postprocess.c \
-mgpt_quads.c mgpt.c models.c models.h protodefs.h startrun.c 
+mgpt_quads.c mgpt.c models.c models.h models_user.h protodefs.h startrun.c 
 
 #tests_mglpt_diffeqs.c tests_mglpt_quads.c tests_mglpt.c tests_models.c tests.h
 
