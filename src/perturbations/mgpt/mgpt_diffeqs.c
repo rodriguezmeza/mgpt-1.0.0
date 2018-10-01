@@ -1,5 +1,5 @@
 /*==============================================================================
- MODULE: mglpt_diffeqs.c			[mgpt]
+ MODULE: mgpt_diffeqs.c			[mgpt]
  Written by: Mario A. Rodriguez-Meza
  Starting date:	January 2018
  Purpose:
@@ -26,9 +26,6 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
-//local void integration(double ystart[], int nvar, double x1, double x2, double eps, double h1,
-//                        double hmin, int *nok, int *nbad, int maxnsteps,
-//                        void (*derivsin)(double, double [], double []));
 local void integration(double ystart[], int nvar, double x1, double x2, double eps, double h1,
                        double hmin, int *nok, int *nbad, int maxnsteps,
                        void (*derivsin)(double, double [], double []),

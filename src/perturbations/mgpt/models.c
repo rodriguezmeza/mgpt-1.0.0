@@ -26,7 +26,6 @@
 #define global // check the behaviour of this
 #include "globaldefs.h"
 #include "protodefs.h"
-//#include "models.h"
 
 // TEMPLATE FOR THE USER
 #include "models_user.h"
@@ -81,7 +80,7 @@ local real S3dI_DGP(real eta, real x, real k, real p, real Dpk, real Dpp,
 
 // ==========================================
 // Begin: fR1 Model global HEADERS -> local
-local void set_Model_fR1(void);
+//local void set_Model_fR1(void);
 // End: fR1 Model global HEADERS
 // ==========================================
 
@@ -115,7 +114,7 @@ local real S3dI_LCDM(real eta, real x, real k, real p, real Dpk, real Dpp,
 local void model_string_to_int(string, int *);
 
 #define HS                          0
-#define fR1                         1
+//#define fR1                         1
 #define DGP                         3
 
 global void set_model(void)
@@ -126,7 +125,7 @@ global void set_model(void)
     model_int_flag = model_int;
 	switch (model_int){
         case HS: set_Model_HS(); break;
-        case fR1: set_Model_fR1(); break;
+//        case fR1: set_Model_fR1(); break;
         case DGP: set_Model_DGP(); break;
         case USERMODEL: set_Model_USER(); break; // In models_user.h
         case LCDM: set_Model_LCDM(); break;
@@ -138,7 +137,7 @@ local void model_string_to_int(string model_str,int *model_int)
 {
 	*model_int = -1;
 	if (strcmp(model_str,"HS") == 0)				*model_int=HS;
-    if (strcmp(model_str,"fR1") == 0)               *model_int=fR1;
+//    if (strcmp(model_str,"fR1") == 0)               *model_int=fR1;
     if (strcmp(model_str,"DGP") == 0)               *model_int=DGP;
     if (strcmp(model_str,"USER") == 0)              *model_int=USERMODEL;
     if (strcmp(model_str,"user") == 0)              *model_int=USERMODEL;
@@ -1448,6 +1447,7 @@ local real S3dI_DGP(real eta, real x, real k, real p, real Dpk, real Dpp,
 // Begin: fR1 Model
 // ===========================================================================
 
+/*
 local void set_Model_fR1(void)
 {
     strcpy(gd.model_comment, "fR1 Model");
@@ -1468,6 +1468,7 @@ local void set_Model_fR1(void)
     //    param[3] =    omegaBD;
     //    param[4] =    screening;
 }
+*/
 
 // ===========================================================================
 // End: fR1 Model
@@ -1706,17 +1707,6 @@ local real M3_LCDM(real eta)
     
     return (M3tmp);
 }
-
-/*
-local real kpp_LCDM(real x, real k, real p)
-{
-    real kpptmp;
-    
-    kpptmp = rsqrt(rsqr(k) + rsqr(p) + 2.0*k*p*x);
-    
-    return kpptmp;
-}
-*/
 
 local real KFL2_LCDM(real eta, real x, real k, real p)
 {
@@ -2017,17 +2007,4 @@ local real S3dI_LCDM(real eta, real x, real k, real p, real Dpk, real Dpp,
 // ===========================================================================
 // End: LCDM Model
 // ===========================================================================
-
-
-
-// ===========================================================================
-// Begin: XXX Model
-// ===========================================================================
-
-
-// ===========================================================================
-// End: XXX Model
-// ===========================================================================
-
-
 

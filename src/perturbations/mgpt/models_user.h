@@ -64,12 +64,12 @@ local void set_Model_USER(void)
 //
 // Parameters set and default values:
 // Local in parameter file parameters:
-//    usrp.ipar1  =1.0;              //    nHS=1.0;     // There is no int parameter
+//    usrp.ipar1  =1.0;          //    nHS=1.0;     // There is no int parameter
     usrp.par1   =-1.0;           //    eps_DGP=-1.0;
-    usrp.par2   =1.0;               //    rc_DGP = 1.0;
+    usrp.par2   =1.0;            //    rc_DGP = 1.0;
 // Local parameters:
-//    usrpl.par1  =1.0/6.0;           //    beta2=1.0/6.0;  // Not local parameter needed
-//    usrpl.par2  =0.0;               //    omegaBD = 0.0;  // Not local parameter needed
+//    usrpl.par1  =1.0/6.0;     //    beta2=1.0/6.0;  // Not local parameter needed
+//    usrpl.par2  =0.0;         //    omegaBD = 0.0;  // Not local parameter needed
 }
 
 

@@ -58,8 +58,6 @@
 #include "strings.h"
 #endif
 
-//#include "data_struc_defs.h"
-// CONTENTS OF data_struc_defs.h
 #if !defined(global)                    // global def question must be here
 #  define global extern
 #endif
@@ -84,7 +82,6 @@ id[nt++]=BOOLEAN;}
 param=(string) malloc(n);                                            \
 addr[nt]=param;                                                    \
 id[nt++]=STRING;}
-// END OF CONTENTS OF...
 
 #include <string.h>
 #include <sys/types.h>
@@ -96,8 +93,8 @@ id[nt++]=STRING;}
 #define PI2     9.8696044010893586188
 #define TWOPI2     19.739208802178716
 //#define FOURPI2   39.4784176043574
-#define FOURPI2   39.4784
-//#define FOURPI2   39.47841760435743
+//#define FOURPI2   39.4784
+#define FOURPI2   39.47841760435743
 #define SIXPI2  59.21762640653615
 #define INVSQRTDTWOPI 0.39894228040143267794
 
@@ -187,8 +184,6 @@ typedef struct {
     char model_comment[100];
 
 	FILE *outlog;
-
-//	int stopflag;
     
     real xnow;
     real xout;

@@ -31,10 +31,10 @@ global int model_int_flag;
 
 global real KA_LCDM;
 global real KB_LCDM;
-global real KA_LCDM1;
-global real KB_LCDM1;
-global real KA_LCDM2;
-global real KB_LCDM2;
+//global real KA_LCDM1;
+//global real KB_LCDM1;
+//global real KA_LCDM2;
+//global real KB_LCDM2;
 
 global void set_model(void);
 

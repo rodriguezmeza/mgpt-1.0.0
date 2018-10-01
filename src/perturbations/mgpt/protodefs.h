@@ -1,5 +1,5 @@
 /*==============================================================================
- HEADER: protodefs.h				[mglpt]
+ HEADER: protodefs.h				[mgpt]
  Written by: Mario A. Rodriguez-Meza
  Starting date: January 2018
  Purpose: Definitions of global prototypes

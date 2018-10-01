@@ -27,7 +27,7 @@
 #define _cmdline_defs_h
 
 #define HEAD1	"NagBody"
-#define HEAD2	"mgpt Code for the Modified gravity perturbation theory."
+#define HEAD2	"mgpt code for modified gravity perturbation theory."
 #define HEAD3	"..."
 
 string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
@@ -54,7 +54,6 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
 // Modified gravity model parameters:
     "mgModel=LCDM",                 ";Modified gravity model to study, default f(R) Hu-Sawicki", ":mgm",
     "suffixModel=",                 ";Suffix model to add to output filenames", ":suffix",
-//    "nHS=1",                        ";Hu-Sawicky index",
     "fR0=1.0e-5",                   ";Hu-Sawicky f_R0",
     "screening=1.0",                ";Hu-Sawicky screening", ":sc",
 // DGP:
@@ -69,13 +68,13 @@ string defv[] = {  ";"HEAD1": " HEAD2 "\n\t " HEAD3,
     "h=0.697",                      ";Hubble parameter value (z=0)",
 //
 // Differential equations evolution parameters:
-    "etaini=-4.0",                  ";Initial eta value :: Log[1/(1 + zini)]",
-    "deta=2/5",                     ";deta integration step",
-    "detamin=0.",                   ";Min eta integration step size",
-    "eps=1.0e-4",                   ";Error parameter",
+    "etaini=-4.0",                  ";Initial conformal time value :: Log[1/(1 + zini)]",
+    "deta=2/5",                     ";Conformal time integration step",
+    "detamin=0.",                   ";Min conformal time integration step size",
+    "epsSolver=1.0e-4",             ";Differential equations solver tolerance error parameter",":epssolver",
     "zout=0.0",                     ";Output redshift value",
     "maxnsteps=10000",              ";Maximum number of integration steps", ":maxn",
-    "solverMethod=bsstep",	        ";Integration method to solve differential equations", ":im",
+    "solverMethod=bsstep",	        ";Integration method to solve differential equations", ":solver",
 //
 // Quadrature parameters:
     "quadratureMethod=trapezoid",   ";Quadrature method to use", ":quadm",

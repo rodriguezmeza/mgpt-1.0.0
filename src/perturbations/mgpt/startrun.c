@@ -26,9 +26,6 @@
 #include "globaldefs.h"
 #include "protodefs.h"
 
-//local void ReadMGModelParameterFile(char *);
-//local void PrintMGModelParameterFile(char *);
-
 local void ReadParameterFile(char *);
 local void PrintParameterFile(char *);
 
@@ -39,9 +36,6 @@ local void startrun_Common(void);
 local void startrun_ParamStat(void);
 local void CheckParameters(void);
 
-//local void setFilesDirs_log(void);
-//local void setFilesDirs(void);
-
 local void InputPSTable(void);
 local void PSLTable(void);
 local void GaussLegendrePoints(void);
@@ -49,14 +43,12 @@ local void GaussLegendrePoints(void);
 void StartRun(string head0, string head1, string head2, string head3)
 {
     real aTime;
-    aTime = cputime();
+    aTime = second();
 
     gd.headline0 = head0; gd.headline1 = head1;
     gd.headline2 = head2; gd.headline3 = head3;
     printf("\n%s\n%s: %s\n\t %s\n",
 		gd.headline0, gd.headline1, gd.headline2, gd.headline3);
-
-//	gd.stopflag = 0;
 
     cmd.paramfile = GetParam("paramfile");
     if (!strnull(cmd.paramfile))
@@ -66,7 +58,7 @@ void StartRun(string head0, string head1, string head2, string head3)
 
     StartOutput();
 
-    fprintf(stdout,"\nTime to StartRun %g\n\n",cputime()-aTime);
+    fprintf(gd.outlog,"\n\nStartRun elapsed time %g\n\n",second()-aTime);
     fflush(stdout);
 }
 
@@ -93,7 +85,6 @@ local void ReadParametersCmdline(void)
     cmd.mgmodel = GetParam("mgModel");
     cmd.model_paramfile = GetParam("modelParamfile");
     cmd.suffixModel = GetParam("suffixModel");
-//    cmd.nHS = GetiParam("nHS");
     cmd.fR0 = GetdParam("fR0");
     cmd.screening = GetdParam("screening");
 //
@@ -128,7 +119,7 @@ local void ReadParametersCmdline(void)
     cmd.x = GetdParam("etaini");
     cmd.dxstr = GetParam("deta");
     cmd.dxmin = GetdParam("detamin");
-    cmd.eps = GetdParam("eps");
+    cmd.eps = GetdParam("epsSolver");
     cmd.xstop = GetdParam("zout");
     cmd.maxnsteps = GetiParam("maxnsteps");
 	cmd.integration_method = GetParam("solverMethod");
@@ -215,18 +206,6 @@ local void startrun_Common(void)
     if (cmd.nquadSteps > nPSLT)
         error("CheckParameters: nquadSteps > nPSLT\n");
 
-/*
-    if (!strnull(cmd.model_paramfile)
-        && !(strcmp(cmd.mgmodel,"HS") == 0)
-        && !(strcmp(cmd.mgmodel,"DGP") == 0)
-        && !(strcmp(cmd.mgmodel,"USERMODEL") == 0)
-        && !(strcmp(cmd.mgmodel,"LCDM") == 0)
-        ) {
-        fprintf(stdout,"\n\nNot default model, using parameter file: %s\n",cmd.model_paramfile);
-        ReadMGModelParameterFile(cmd.model_paramfile);
-        PrintMGModelParameterFile(cmd.model_paramfile);
-    }
-*/
 #define usrmodel_parameter_null    "usrmodel_parameters_null"
 
     if ( (strcmp(cmd.mgmodel,"USER") == 0) || (strcmp(cmd.mgmodel,"user") == 0))
@@ -311,8 +290,10 @@ local void startrun_ParamStat(void)
 		if ( dx2 == 0. )
 			error("\n\nstartrun_ParamStat: deta : deta2 must be finite\n");
 	}
-	if (GetParamStat("zout") & ARGPARAM)
-		cmd.xstop = GetdParam("zout");
+    if (GetParamStat("zout") & ARGPARAM)
+        cmd.xstop = GetdParam("zout");
+    if (GetParamStat("epsSolver") & ARGPARAM)
+        cmd.eps = GetdParam("epsSolver");
 
 	if (GetParamStat("maxnsteps") & ARGPARAM) 
 		cmd.maxnsteps = GetiParam("maxnsteps");
@@ -401,6 +382,8 @@ local void CheckParameters(void)
         error("CheckParameters: absurd value for deta\n");
     if(cmd.x == rlog(1.0/(1.0+cmd.xstop)) )
         error("\n\nstartrun_Common: etaini and etastop=exp(-zout)-1 must be different\n");
+    if (cmd.eps > 1.0e-4 || cmd.eps <= 0)
+        error("CheckParameters: inapropriate or absurd value for epsSolver\n");
     if (cmd.maxnsteps < 1)
         error("CheckParameters: absurd value for maxnsteps\n");
 
@@ -412,39 +395,6 @@ local void CheckParameters(void)
     if (cmd.epsquad >= 1.0e-1 || cmd.epsquad <= 0)
         error("CheckParameters: absurd value for epsquad\n");
 }
-
-/*
-// I/O directories:
-local void setFilesDirs_log(void)
-{
-    char buf[200];
-
-    sprintf(gd.tmpDir,"tmp");
-
-    sprintf(buf,"if [ ! -d %s ]; then mkdir %s; fi",gd.tmpDir,gd.tmpDir);
-    system(buf);
-
-    sprintf(gd.logfilePath,"%s/mgpt%s.log",gd.tmpDir,cmd.suffixModel);
-}
-
-local void setFilesDirs(void)
-{
-    char buf[200];
-
-    sprintf(gd.clptDir,"CLPT");
-    sprintf(buf,"if [ ! -d %s ]; then mkdir %s; fi",gd.clptDir,gd.clptDir);
-    fprintf(gd.outlog,"system: %s\n",buf);
-    system(buf);
-
-    sprintf(gd.inputDir,"Input");
-    sprintf(gd.fnamePS,"%s/%s",gd.inputDir,cmd.fnamePS);
-
-    sprintf(gd.fpfnamekfun,"CLPT/kfunctions%s.dat",cmd.suffixModel);
-    sprintf(gd.fpfnameSPTPowerSpectrum,"SPTPowerSpectrum%s.dat",cmd.suffixModel);
-    sprintf(gd.fpfnameqfunctions,"CLPT/qfunctions%s.dat",cmd.suffixModel);
-    sprintf(gd.fpfnameclptfunctions,"CorrelationFunction%s.dat",cmd.suffixModel);
-}
-*/
 
 local void ReadParameterFile(char *fname)
 {
@@ -504,7 +454,7 @@ local void ReadParameterFile(char *fname)
     RPName(cmd.x,"etaini");
 	SPName(cmd.dxstr,"deta",100);
     RPName(cmd.dxmin,"detamin");
-    RPName(cmd.eps,"eps");
+    RPName(cmd.eps,"epsSolver");
 	RPName(cmd.xstop,"zout");
     IPName(cmd.maxnsteps,"maxnsteps");
 	SPName(cmd.integration_method,"solverMethod",100);
@@ -645,7 +595,7 @@ local void PrintParameterFile(char *fname)
 // Differential equations evolution parameters:
         fprintf(fdout,FMTR,"etaini",cmd.x);
         fprintf(fdout,FMTR,"detamin",cmd.dxmin);
-        fprintf(fdout,FMTR,"eps",cmd.eps);
+        fprintf(fdout,FMTR,"epsSolver",cmd.eps);
         fprintf(fdout,FMTT,"deta",cmd.dxstr);
         fprintf(fdout,FMTR,"zout",cmd.xstop);
         fprintf(fdout,FMTI,"maxnsteps",cmd.maxnsteps);
@@ -669,143 +619,6 @@ local void PrintParameterFile(char *fname)
 #undef FMTR
 
 
-/*
-//=============================================================
-// Begin: Modified gravity model reading and writing parameters
-
-local void ReadMGModelParameterFile(char *fname)
-{
-#define DOUBLE 1
-#define STRING 2
-#define INT 3
-#define BOOLEAN 4
-#define MAXTAGS 300
-    
-    FILE *fd,*fdout;
-    
-    char buf[200],buf1[200],buf2[200],buf3[200];
-    int  i,j,nt;
-    int  id[MAXTAGS];
-    void *addr[MAXTAGS];
-    char tag[MAXTAGS][50];
-    int  errorFlag=0;
-    
-    nt=0;
-
-// Modified gravity model parameters:
-    IPName(cmd.nHS,"nHS");
-    RPName(cmd.fR0,"fR0");
-    RPName(cmd.screening,"screening");
-//
-    if((fd=fopen(fname,"r"))) {
-        while(!feof(fd)) {
-            fgets(buf,200,fd);
-            if(sscanf(buf,"%s%s%s",buf1,buf2,buf3)<1)
-                continue;
-            if(sscanf(buf,"%s%s%s",buf1,buf2,buf3)<2)
-                *buf2='\0';
-            if(buf1[0]=='%')
-                continue;
-            for(i=0,j=-1;i<nt;i++)
-                if(strcmp(buf1,tag[i])==0) {
-                    j=i;
-                    tag[i][0]=0;
-                    break;
-                }
-            if(j>=0) {
-                switch(id[j]) {
-                    case DOUBLE:
-                        *((double*)addr[j])=atof(buf2);
-                        break;
-                    case STRING:
-                        strcpy(addr[j],buf2);
-                        break;
-                    case INT:
-                        *((int*)addr[j])=atoi(buf2);
-                        break;
-                    case BOOLEAN:
-                        if (strchr("tTyY1", *buf2) != NULL) {
-                            *((bool*)addr[j])=TRUE;
-                        } else
-                            if (strchr("fFnN0", *buf2) != NULL)  {
-                                *((bool*)addr[j])=FALSE;
-                            } else {
-                                error("getbparam: %s=%s not bool\n",buf1,buf2);
-                            }
-                        break;
-                }
-            } else {
-                fprintf(stdout, "Error in file %s: Tag '%s' %s.\n",
-                        fname, buf1, "not allowed or multiple defined");
-                errorFlag=1;
-            }
-        }
-        fclose(fd);
-    } else {
-        fprintf(stdout,"Parameter file %s not found.\n", fname);
-        errorFlag=1;
-        exit(1);
-    }
-    
-    for(i=0;i<nt;i++) {
-        if(*tag[i]) {
-            fprintf(stdout,
-                    "Error. I miss a value for tag '%s' in parameter file '%s'.\n",
-                    tag[i],fname);
-            exit(0);
-        }
-    }
-#undef DOUBLE
-#undef STRING
-#undef INT
-#undef BOOLEAN
-#undef MAXTAGS
-}
-
-#define FMTT	"%-35s%s\n"
-#define FMTI	"%-35s%d\n"
-#define FMTR	"%-35s%g\n"
-
-local void PrintMGModelParameterFile(char *fname)
-{
-    FILE *fdout;
-    char buf[200];
-    
-    sprintf(buf,"%s%s%s",fname,cmd.suffixModel,"-usedvalues");
-    if(!(fdout=fopen(buf,"w"))) {
-        fprintf(stdout,"error opening file '%s' \n",buf);
-        exit(0);
-    } else {
-        fprintf(fdout,"%s\n",
-                "%-------------------------------------------------------------------");
-        fprintf(fdout,"%s %s\n","% Modified gravity parameter model input file for:",gd.headline0);
-        fprintf(fdout,"%s\n","%");
-        fprintf(fdout,"%s %s: %s\n%s\t    %s\n","%",gd.headline1,gd.headline2,"%",
-                gd.headline3);
-        fprintf(fdout,"%s\n%s\n",
-                "%-------------------------------------------------------------------",
-                "%");
-//
-// Modified gravity model parameters:
-        fprintf(fdout,FMTI,"nHS",cmd.nHS);
-        fprintf(fdout,FMTR,"fR0",cmd.fR0);
-        fprintf(fdout,FMTR,"screening",cmd.screening);
-//
-        fprintf(fdout,"\n\n");
-    }
-    fclose(fdout);
-}
-
-#undef FMTT
-#undef FMTI
-#undef FMTR
-
-// End: Modified gravity model reading and writing parameters
-//=============================================================
-*/
-
-
-//#define NPT 50
 #define SPREAD 1.0
 local void InputPSTable(void)
 {
@@ -825,9 +638,6 @@ local void InputPSTable(void)
     real *pPS2tmp;
     char namebuf[256];
     real kminext, kmaxext, dktmp, kmn, kmx;
-//    int Nkext=600, NkL=50, NkU=50;
-//    real kminT=1.0e-6, kmaxT=350.0;
-
 
     fprintf(gd.outlog,"\n\nReading power spectrum from file %s...\n",gd.fnamePS);
     inout_InputData(gd.fnamePS, 1, 2, &nPSTabletmp);
@@ -966,7 +776,7 @@ local void InputPSTable(void)
     
     for (i=1; i<=nPSTable; i++) {
         kval = rlog10(kmn) + dk*((real)(i - 1));
-        if (rpow(10.0,kval) > kmin && rpow(10.0,kval) < kmax)
+        if (rpow(10.0,kval) >= kmin && rpow(10.0,kval) <= kmax)
             PSval = psInterpolation_nr(kval, kPStmp, pPStmp, nPSLogT);
         else
             if (rpow(10.0,kval) < kmin)
@@ -982,7 +792,6 @@ local void InputPSTable(void)
         p++;
     }
 
-
     sprintf(namebuf,"%s/%s%s_%s",gd.tmpDir,cmd.fnamePS,cmd.suffixModel,"ext.dat");
     outstr = stropen(namebuf,"w!");
     for (p=PSLCDMtab; p<PSLCDMtab+nPSTable; p++) {
@@ -993,12 +802,11 @@ local void InputPSTable(void)
 
     gd.kminPSext = kmn;
     gd.kmaxPSext = kmx;
-    fprintf(gd.outlog,"\nkmin, kmax of the extended power spectrum (final values): %g %g\n",
+    fprintf(gd.outlog,"\nkmin, kmax of the extended power spectrum (final values): %g %g",
             gd.kminPSext, gd.kmaxPSext);
     fprintf(gd.outlog,"\nkmin, kmax of the extended power spectrum (PSExt table values): %g %g\n",
             kPos(PSLCDMtab), kPos(PSLCDMtab+nPSTable-1));
 //
-
     free_dvector(pPS2,1,nPSLogT);
     free_dvector(pPStmp,1,nPSLogT);
     free_dvector(kPStmp,1,nPSLogT);
@@ -1010,7 +818,6 @@ local void InputPSTable(void)
     free_dvector(yL,1,cmd.NPTL);
     free_dvector(xL,1,cmd.NPTL);
 }
-//#undef NPT
 #undef SPREAD
 
 
@@ -1021,17 +828,17 @@ local void PSLTable(void)
     real kmin, Dpkmin, Dpk;
     pointPSTableptr p, pn;
     int i;
+    real dk, kmax;
 //
     real xstoptmp, Dp0, Dpzout, fac;
 
     xstoptmp = gd.xstop;
     gd.xstop = 0.;
-//    Dp0 = DpFunction(0.); // LCDM
-    Dp0 = DpFunction_LCDM(0.); // LCDM
-    fprintf(gd.outlog,"\n\n Dp(0) = %g\n",Dp0);
+    Dp0 = DpFunction_LCDM(0.);
+    fprintf(gd.outlog,"\n LCDM: Dp(0) = %g",Dp0);
     gd.xstop = xstoptmp;
     Dpzout = DpFunction(0.);
-    fprintf(gd.outlog,"\n\n Dp(%g) = %g\n",cmd.xstop,Dpzout);
+    fprintf(gd.outlog,"\n Dp(%g) = %g",cmd.xstop,Dpzout);
     
     fac = rsqr(Dpzout/Dp0);
     for (p = PSLCDMtab; p<PSLCDMtab+nPSTable; p++) {
@@ -1045,12 +852,12 @@ local void PSLTable(void)
                 kPos(p),PS(p));
     }
     fclose(outstr);
-
 //
-
     kmin = kPos(PSLCDMtab);
     Dpkmin = DpFunction(kmin);
-    fprintf(gd.outlog,"\n\n Dpkmin = %g\n",Dpkmin);
+    fprintf(gd.outlog,"\n kminT, Dpkmin : %g %g",kmin,Dpkmin);
+    Dpkmin = DpFunction(0.0001);        // Minimum variation when k->0
+    fprintf(gd.outlog,"\n kmin, Dpkmin : 0.0001 %g\n",Dpkmin);
 
     PSLT = (pointPSTableptr) allocate(nPSTable * sizeof(pointPSTable));
     nPSLT = 0;
@@ -1070,7 +877,7 @@ local void PSLTable(void)
     i=1;
     for (pn = PSLT; pn<PSLT+nPSLT; pn++) {
         kPS[i] = kPos(pn);
-        pPS[i] = PS(pn);
+            pPS[i] = PS(pn);
         i++;
     }
 //
@@ -1079,14 +886,22 @@ local void PSLTable(void)
     sprintf(namebuf,"%s/%s%s%s",gd.clptDir,"PSL",cmd.suffixModel,".dat");
     outstr = stropen(namebuf,"w!");
     for (i=1; i<=nPSLT; i++) {
-        fprintf(outstr,"%g %g\n",
+        fprintf(outstr,"%e %e\n",
                 kPS[i],pPS[i]);
     }
     fclose(outstr);
 
-//    fprintf(stdout,"\nPSLCDMTable: %d, %g, %g",nPSTable, kPos(PSLCDMtab), kPos(PSLCDMtab+nPSTable-1));
-//    fprintf(stdout,"\nPSLTable: %d, %g, %g",nPSLT, kPos(PSLT), kPos(PSLT+nPSLT-1));
-
+// Distribution of k in log scale to compute Qs and Rs integrations:
+    kmin = kPS[1];
+    kmax = kPS[nPSLT];
+    if (cmd.nquadSteps==1) {
+        dk = 0.;
+    } else {
+        dk = (rlog10(kmax) - rlog10(kmin))/((real)(cmd.nquadSteps - 1));
+    }
+    fprintf(gd.outlog,
+    "\nDistribution of %d k's in log scale (kmin,kmax and log dk): %g %g %g\n",
+            cmd.nquadSteps,kmin,kmax,dk);
 }
 
 local void GaussLegendrePoints(void)
@@ -1196,24 +1011,9 @@ global  real psInterpolation(real k, pointPSTableptr PSLtab, int nPSL)
 
 global  real psInterpolation_nr(real k, double kPS[], double pPS[], int nPS)
 {
-    pointPSTableptr pf, pi;
+// Normal scale value of k is: rpow(10.0, k)?
     real psftmp;
-    real dps;
-    real kf, ki;
-    
-    pi = PSLCDMtab;
-    pf = PSLCDMtab+nPSTable-1;
-    ki = kPS[1];
-    kf = kPS[nPS];
-    
-    //
-    //    if ( pow(10.0,k) < ki )
-    //        fprintf(gd.outlog,"\n\npsInterpolation_nr: warning! :: k is out of range (%g, %g)... %g\n",
-    //                ki, kf, pow(10.0,k));
-    //    if ( pow(10.0,k) > kf )
-    //        fprintf(gd.outlog,"\n\npsInterpolation_nr: warning! :: k is out of range (%g, %g)... %g\n",
-    //                ki, kf, pow(10.0,k) );
-    
+
     splint(kPS,pPS,pPS2,nPS,k,&psftmp);
     
     return (psftmp);
